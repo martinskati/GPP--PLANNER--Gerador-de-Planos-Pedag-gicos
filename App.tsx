@@ -7,10 +7,13 @@ import Header from './components/Header';
 import Footer from './components/Footer';
 import PlanResult from './components/PlanResult';
 import HistoryDrawer from './components/HistoryDrawer';
-import { BookOpen, Send, Loader2, Info } from 'lucide-react';
+import { BookOpen, Send, Loader2, Info, MessageSquare, Star, CheckCircle } from 'lucide-react';
 
 const App: React.FC = () => {
   const [inputText, setInputText] = useState('');
+  const [feedbackText, setFeedbackText] = useState('');
+  const [feedbackStatus, setFeedbackStatus] = useState<'idle' | 'sending' | 'success'>('idle');
+  
   const [state, setState] = useState<AppState>({
     isGenerating: false,
     plan: null,
@@ -39,10 +42,7 @@ const App: React.FC = () => {
     
     try {
       const generatedPlan = await generateLessonPlan(inputText);
-      
-      // Salva automaticamente no "Banco"
       storageService.savePlan(generatedPlan);
-      // Atualiza lista local imediatamente
       setHistory(storageService.getHistory());
 
       setState({
@@ -60,6 +60,19 @@ const App: React.FC = () => {
     }
   }, [inputText]);
 
+  const handleSendFeedback = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!feedbackText.trim()) return;
+
+    setFeedbackStatus('sending');
+    // Simula envio para um servidor/banco de dados
+    setTimeout(() => {
+      setFeedbackStatus('success');
+      setFeedbackText('');
+      setTimeout(() => setFeedbackStatus('idle'), 5000);
+    }, 1500);
+  };
+
   const handleReset = () => {
     setState({ isGenerating: false, plan: null, error: null, showHistory: false });
     setInputText('');
@@ -69,7 +82,7 @@ const App: React.FC = () => {
     setState(prev => ({
       ...prev,
       plan: savedPlan,
-      showHistory: false, // Fecha o drawer ao selecionar
+      showHistory: false,
       error: null
     }));
   };
@@ -82,7 +95,7 @@ const App: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen flex flex-col text-slate-100 relative">
+    <div className="min-h-screen flex flex-col text-slate-800 relative bg-slate-50">
       <Header onOpenHistory={() => setState(prev => ({ ...prev, showHistory: true }))} />
       
       <HistoryDrawer 
@@ -95,20 +108,20 @@ const App: React.FC = () => {
 
       <main className="flex-grow container mx-auto px-4 py-8 max-w-5xl">
         {!state.plan ? (
-          <div className="space-y-8 animate-in fade-in duration-500">
-            {/* Card Principal - Preto com detalhes Laranja */}
-            <div className="bg-black rounded-2xl shadow-2xl border border-orange-500/20 p-6 md:p-8 relative overflow-hidden">
-              <div className="absolute top-0 right-0 w-32 h-32 bg-orange-600/10 rounded-full blur-3xl -mr-10 -mt-10 pointer-events-none"></div>
+          <div className="space-y-12 animate-in fade-in duration-500">
+            {/* Card Principal */}
+            <div className="bg-white rounded-2xl shadow-xl border border-slate-200 p-6 md:p-8 relative overflow-hidden">
+              <div className="absolute top-0 right-0 w-32 h-32 bg-emerald-900/5 rounded-full blur-3xl -mr-10 -mt-10 pointer-events-none"></div>
               
               <div className="flex items-start space-x-4 mb-6 relative z-10">
-                <div className="bg-orange-500/10 p-3 rounded-xl border border-orange-500/20">
-                  <BookOpen className="text-orange-500 w-6 h-6" />
+                <div className="bg-emerald-50 p-3 rounded-xl border border-emerald-100">
+                  <BookOpen className="text-emerald-800 w-6 h-6" />
                 </div>
                 <div>
-                  <h2 className="text-xl font-semibold text-white">Nova Proposta Pedagógica</h2>
-                  <p className="text-slate-400 mt-1">
-                    Descreva livremente sua ideia para a aula. Seu plano será gerado, qualificado e 
-                    <span className="text-orange-500 font-bold"> salvo automaticamente no seu banco de dados.</span>
+                  <h2 className="text-xl font-bold text-slate-900">Nova Proposta Pedagógica</h2>
+                  <p className="text-slate-500 mt-1">
+                    Descreva sua ideia para a aula. O plano será qualificado e 
+                    <span className="text-emerald-800 font-bold"> arquivado no seu banco de dados.</span>
                   </p>
                 </div>
               </div>
@@ -117,25 +130,25 @@ const App: React.FC = () => {
                 <textarea
                   value={inputText}
                   onChange={(e) => setInputText(e.target.value)}
-                  placeholder="Ex: Gostaria de uma aula de história sobre a Revolução Industrial para o 8º ano, focando no impacto nas cidades e usando uma atividade prática de mapa mental..."
-                  className="w-full h-48 p-4 rounded-xl bg-slate-900 border border-slate-700 focus:ring-2 focus:ring-orange-500 focus:border-transparent transition-all outline-none resize-none text-slate-200 placeholder-slate-600 leading-relaxed"
+                  placeholder="Ex: Gostaria de uma aula de história sobre a Revolução Industrial para o 8º ano..."
+                  className="w-full h-48 p-4 rounded-xl bg-slate-50 border border-slate-200 focus:ring-2 focus:ring-emerald-800 focus:border-transparent transition-all outline-none resize-none text-slate-800 placeholder-slate-400 leading-relaxed"
                   disabled={state.isGenerating}
                 />
                 
                 <div className="flex items-center justify-between">
-                  <div className="flex items-center text-xs text-slate-500">
-                    <Info className="w-4 h-4 mr-1 text-orange-500" />
+                  <div className="flex items-center text-xs text-slate-400">
+                    <Info className="w-4 h-4 mr-1 text-emerald-700" />
                     Sua autoria intelectual será integralmente preservada.
                   </div>
                   <button
                     type="submit"
                     disabled={state.isGenerating || !inputText.trim()}
-                    className="flex items-center space-x-2 bg-orange-600 hover:bg-orange-700 disabled:bg-slate-800 disabled:text-slate-500 text-white px-6 py-3 rounded-xl font-bold transition-all shadow-lg active:scale-95 border border-orange-500/50"
+                    className="flex items-center space-x-2 bg-emerald-800 hover:bg-emerald-900 disabled:bg-slate-200 disabled:text-slate-400 text-white px-6 py-3 rounded-xl font-bold transition-all shadow-lg active:scale-95"
                   >
                     {state.isGenerating ? (
                       <>
                         <Loader2 className="w-5 h-5 animate-spin" />
-                        <span>Sistematizando e Salvando...</span>
+                        <span>Qualificando e Salvando...</span>
                       </>
                     ) : (
                       <>
@@ -149,23 +162,76 @@ const App: React.FC = () => {
             </div>
 
             {state.error && (
-              <div className="bg-red-900/30 border border-red-500/30 text-red-400 p-4 rounded-xl flex items-center">
-                <span className="font-medium">Ops!</span>
+              <div className="bg-red-50 border border-red-200 text-red-600 p-4 rounded-xl flex items-center">
+                <span className="font-bold">Erro:</span>
                 <span className="ml-2">{state.error}</span>
               </div>
             )}
 
+            {/* Features Grid */}
             <section className="grid md:grid-cols-3 gap-6">
               {[
-                { title: 'Banco de Planos', desc: 'Todo plano gerado é salvo automaticamente no seu histórico.' },
+                { title: 'Banco de Planos', desc: 'Todo plano gerado é arquivado automaticamente no seu histórico.' },
                 { title: 'Taxonomia de Bloom', desc: 'Objetivos estruturados para garantir progressão cognitiva.' },
-                { title: 'Educação Inclusiva', desc: 'Metodologias focadas na diversidade e ritmos de aprendizagem.' }
+                { title: 'Inclusão Integral', desc: 'Metodologias focadas no DUA e ritmos de aprendizagem.' }
               ].map((item, idx) => (
-                <div key={idx} className="bg-black p-6 rounded-2xl border border-white/10 hover:border-orange-500/50 transition-colors group">
-                  <h3 className="font-semibold text-slate-200 mb-2 group-hover:text-orange-400 transition-colors">{item.title}</h3>
+                <div key={idx} className="bg-white p-6 rounded-2xl border border-slate-200 hover:border-emerald-200 hover:shadow-md transition-all group">
+                  <h3 className="font-bold text-slate-900 mb-2 group-hover:text-emerald-800 transition-colors">{item.title}</h3>
                   <p className="text-sm text-slate-500 leading-relaxed">{item.desc}</p>
                 </div>
               ))}
+            </section>
+
+            {/* Seção de Feedback */}
+            <section className="bg-white rounded-2xl shadow-lg border border-slate-200 p-8 relative overflow-hidden">
+              <div className="flex flex-col md:flex-row items-center gap-8">
+                <div className="flex-1 space-y-4">
+                  <div className="flex items-center space-x-3">
+                    <div className="bg-emerald-800 p-2 rounded-lg">
+                      <MessageSquare className="text-white w-5 h-5" />
+                    </div>
+                    <h2 className="text-xl font-bold text-slate-900">Espaço de Escuta Docente</h2>
+                  </div>
+                  <p className="text-slate-500 text-sm leading-relaxed">
+                    Sua opinião qualifica nossa ferramenta. Tem alguma sugestão de melhoria ou gostaria de elogiar a sistematização pedagógica? 
+                    <span className="block mt-2 font-bold text-emerald-800">Estamos prontos para ouvir você.</span>
+                  </p>
+                </div>
+
+                <div className="w-full md:w-96">
+                  {feedbackStatus === 'success' ? (
+                    <div className="bg-emerald-50 border border-emerald-100 p-6 rounded-xl text-center animate-in zoom-in duration-300">
+                      <CheckCircle className="w-10 h-10 text-emerald-800 mx-auto mb-3" />
+                      <h3 className="font-bold text-emerald-900">Obrigado pelo Feedback!</h3>
+                      <p className="text-xs text-emerald-700 mt-1">Sua contribuição é essencial para nossa evolução.</p>
+                    </div>
+                  ) : (
+                    <form onSubmit={handleSendFeedback} className="space-y-3">
+                      <textarea
+                        value={feedbackText}
+                        onChange={(e) => setFeedbackText(e.target.value)}
+                        placeholder="Como podemos melhorar sua experiência?"
+                        className="w-full h-24 p-3 rounded-xl bg-slate-50 border border-slate-200 text-sm focus:ring-2 focus:ring-emerald-800 outline-none transition-all resize-none"
+                        disabled={feedbackStatus === 'sending'}
+                      />
+                      <button
+                        type="submit"
+                        disabled={feedbackStatus === 'sending' || !feedbackText.trim()}
+                        className="w-full flex items-center justify-center space-x-2 bg-emerald-800 hover:bg-emerald-900 disabled:bg-slate-100 disabled:text-slate-400 text-white py-2 rounded-xl font-bold text-sm transition-all shadow-sm"
+                      >
+                        {feedbackStatus === 'sending' ? (
+                          <Loader2 className="w-4 h-4 animate-spin" />
+                        ) : (
+                          <>
+                            <Star className="w-4 h-4" />
+                            <span>Enviar Feedback</span>
+                          </>
+                        )}
+                      </button>
+                    </form>
+                  )}
+                </div>
+              </div>
             </section>
           </div>
         ) : (
