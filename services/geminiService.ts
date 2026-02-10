@@ -16,40 +16,25 @@ BANCO DE HABILIDADES ESTRUTURANTES (SESI/BNCC) - PRIORIDADE DE USO:
 10. SESI.EM13LP51.a.42 - Analisar obras significativas das artes visuais, da música, do teatro, da dança e das literaturas brasileiras e de outros países e povos, com olhar atento à diversidade de saberes, identidades e culturas, bem como os processos de disputa por legitimidade.
 `;
 
-const SYSTEM_INSTRUCTION = `Você é um Consultor Pedagógico Institucional. Sua função é criar planos de aula seguindo ESTRITAMENTE o modelo de escrita técnica, densa e narrativa do exemplo abaixo.
+const SYSTEM_INSTRUCTION = `Você é um Consultor Pedagógico Institucional de alto nível. Sua função é sistematizar a ideia autoral do professor em um plano de aula denso, técnico e humanizado.
+
+CONSIDERE OS DADOS OBRIGATÓRIOS INFORMADOS:
+1. Conteúdo.
+2. Verbo base da habilidade (BNCC/Bloom).
+3. Quantidade de alunos (Ajuste a dinâmica de grupo e tempo).
+4. Característica da turma (Ex: se for agitada, proponha atividades de maior engajamento prático; se for heterogênea, use tutorias entre pares).
+5. Perfil de inclusão (Adapte estritamente para TEA, TDAH, Dislexia, Baixa Visão, etc., se mencionado).
+
+DIRETRIZES DE ESCRITA:
+- Metodologia: Use termos técnicos (Ex: Sala de Aula Invertida, Rotação por Estações, Gamificação).
+- Objetivos de Aprendizagem: Use o VERBO BASE informado pelo professor para determinar a complexidade (Taxonomia de Bloom).
+- Desenvolvimento (O QUE): Parágrafo único, foco nos CONCEITOS e OBJETO DE CONHECIMENTO.
+- Desenvolvimento (COMO): Parágrafo único, narrativa do PASSO A PASSO, considerando a característica da turma.
 
 ${AVAILABLE_SKILLS}
 
-INSTRUÇÃO PARA HABILIDADES:
-Consulte o BANCO DE HABILIDADES acima. Se o tema da aula for compatível (Linguagens/Português/Artes), SELECIONE internamente de 1 a 3 habilidades dessa lista que melhor se adequem.
-
-MODELO DE OURO (Siga este estilo de escrita e profundidade):
----
-Metodologia: Aula Expositiva Dialogada + Leitura de imagens + Análise discursiva orientada
-Adaptações Inclusivas: Para estudantes com TDAH, a leitura de imagens será fracionada em detalhes menores com roteiro guiado para foco atencional. Para estudantes com baixa visão, serão disponibilizadas as obras em pranchas táteis ou audiodescrição detalhada. O uso de organizadores visuais durante a aula expositiva beneficiará a turma como um todo (DUA).
-O que será feito na aula: Os estudantes terão uma introdução ao capítulo por meio de entender o conceito de mundo do trabalho e das relações de poder, analisando a arte como registro social. Serão apresentadas manifestações do Realismo, suas reverberações no Brasil, as representações do trabalho nas artes visuais (Portinari e Tarsila do Amaral), no cinema (sétima arte) e a construção discursiva da figura do Jeca Tatu como anti-herói rural.
-Como será feita a aula: A aula começa com uma exposição dialogada sobre o conceito de mundo do trabalho e suas relações de poder, ativando conhecimentos prévios dos estudantes. Em seguida, a professora apresenta o Realismo como movimento que busca representar a realidade social, relacionando-o às produções artísticas brasileiras. A partir da leitura de imagens de obras de Portinari e Tarsila do Amaral, os estudantes são conduzidos a analisar como o trabalho é representado visualmente e quais discursos sociais emergem dessas obras. Na sequência, discute-se a representação do trabalho na sétima arte, destacando o cinema como linguagem que constrói narrativas sobre o trabalhador. Por fim, é apresentada a figura de Jeca Tatu, analisando-o como construção discursiva e símbolo do trabalhador rural marginalizado, articulando linguagem, estereótipo e poder.
-Evidências de aprendizagem: O estudante compreende o conceito de mundo do trabalho e as relações de poder que o atravessam, identifica a arte como forma de registro social e reconhece diferentes representações discursivas do trabalhador nas artes visuais, no cinema e na literatura, estabelecendo relações entre linguagem, contexto histórico e ideologia.
-Instrumentos de avaliação: Participação nas discussões orais, leitura e interpretação orientada de imagens artísticas, registros no caderno (anotações conceituais e respostas às perguntas mediadoras).
----
-
-DIRETRIZES DE GERAÇÃO:
-1.  **Metodologia**: Use termos técnicos concisos.
-2.  **Skills (Habilidades)**: OBRIGATÓRIO preencher o array para o banco de dados. Identifique o verbo principal da habilidade (ex: "Analisar", "Criar", "Utilizar").
-3.  **Inclusão e Acessibilidade**:
-    - Analise se o professor mencionou especificidades como: **TDAH, TEA, Autismo, Deficiência Intelectual, Mudez/Surdez, Deficiência Motora**, entre outras.
-    - Se mencionado, **GERE ADAPTAÇÕES ESPECÍFICAS** para o conteúdo da aula, citando a especificidade.
-    - Se NÃO mencionado, gere estratégias de **Desenho Universal para Aprendizagem (DUA)** aplicáveis a qualquer aluno (ex: múltiplas formas de apresentação).
-4.  **O que será feito**: Texto corrido, parágrafo ÚNICO (aprox. 6 linhas). Foco no OBJETO DE CONHECIMENTO e CONCEITOS.
-5.  **Como será feito**: Texto corrido, parágrafo ÚNICO (aprox. 6-8 linhas). Foco na SEQUÊNCIA DIDÁTICA e AÇÕES.
-6.  **Evidências**: Texto corrido, parágrafo ÚNICO.
-7.  **Instrumentos**: Lista discursiva em linha.
-
-TAXONOMIA DE BLOOM (CRUCIAL):
-O nível cognitivo da aula é determinado pela Habilidade selecionada.
-Se a habilidade diz "ANALISAR", os Objetivos de Aprendizagem devem conter verbos como: Analisar, Comparar, Diferenciar, Decompor.
-Se a habilidade diz "CRIAR" ou "ELABORAR", os objetivos devem chegar a: Planejar, Construir, Desenvolver, Produzir.
-GARANTA que os objetivos reflitam a complexidade exigida pelo verbo da habilidade escolhida.`;
+ADAPTAÇÕES ESPECÍFICAS:
+Se o professor indicar TEA, TDAH, Baixa Visão ou Dislexia, as "Estratégias de Inclusão" DEVEM ser personalizadas para essas condições, além de incluir princípios do DUA (Desenho Universal para Aprendizagem).`;
 
 const lessonPlanSchema = {
   type: Type.OBJECT,
@@ -60,33 +45,33 @@ const lessonPlanSchema = {
     learningObjectives: {
       type: Type.ARRAY,
       items: { type: Type.STRING },
-      description: "Lista de objetivos com verbos de Bloom alinhados ao verbo da Habilidade selecionada."
+      description: "Objetivos alinhados ao verbo de Bloom solicitado."
     },
     skills: {
       type: Type.ARRAY,
       items: { type: Type.STRING },
-      description: "Lista de Habilidades BNCC/SESI selecionadas (Código + Descrição) para armazenamento interno."
+      description: "Código e descrição da habilidade selecionada do banco."
     },
     methodology: { type: Type.STRING },
     inclusionStrategies: {
       type: Type.STRING,
-      description: "Parágrafo único com propostas de atividades inclusivas e adaptações (TEA, TDAH, Deficiência Intelectual, Motora, Mudez, DUA)."
+      description: "Estratégias para os perfis de inclusão informados (TEA, TDAH, etc)."
     },
     development: {
       type: Type.OBJECT,
       properties: {
-        what: { type: Type.STRING, description: "Parágrafo único, técnico, descrevendo OS CONTEÚDOS e CONCEITOS abordados." },
-        how: { type: Type.STRING, description: "Parágrafo único, narrativo, descrevendo O PASSO A PASSO da aula." }
+        what: { type: Type.STRING, description: "O que será feito (Conceitos)." },
+        how: { type: Type.STRING, description: "Como será feito (Passo a passo considerando característica da turma)." }
       },
       required: ["what", "how"]
     },
     learningEvidence: {
       type: Type.STRING,
-      description: "Parágrafo único descrevendo o que o aluno deve compreender/demonstrar."
+      description: "Evidências de compreensão."
     },
     assessmentInstruments: {
       type: Type.STRING,
-      description: "Lista descritiva dos instrumentos de avaliação."
+      description: "Instrumentos de avaliação."
     }
   },
   required: ["discipline", "content", "learningObjectives", "skills", "methodology", "inclusionStrategies", "development", "learningEvidence", "assessmentInstruments"]
@@ -98,21 +83,20 @@ export async function generateLessonPlan(teacherText: string): Promise<LessonPla
   try {
     const response = await ai.models.generateContent({
       model: "gemini-3-pro-preview",
-      contents: `Professor solicitou: "${teacherText}".
-      Gere um plano de aula seguindo RIGOROSAMENTE o estilo narrativo e técnico. 
-      ATENÇÃO À INCLUSÃO: Verifique se há menção a TDAH, TEA, Deficiências, etc., e inclua adaptações na seção específica.
-      Selecione a habilidade adequada para o banco de dados, mas use o VERBO dessa habilidade para definir o nível dos Objetivos de Aprendizagem (Bloom).`,
+      contents: `O professor forneceu os seguintes dados estruturados: "${teacherText}".
+      Por favor, sistematize o plano de aula respeitando a quantidade de alunos e o perfil da turma informados. 
+      Garanta que o nível dos objetivos corresponda ao verbo base indicado.`,
       config: {
         systemInstruction: SYSTEM_INSTRUCTION,
         responseMimeType: "application/json",
         responseSchema: lessonPlanSchema,
-        temperature: 0.5,
+        temperature: 0.4,
       },
     });
 
     return JSON.parse(response.text || "{}") as LessonPlan;
   } catch (error) {
     console.error("Erro ao gerar plano:", error);
-    throw new Error("Não foi possível processar a proposta pedagógica. Tente detalhar um pouco mais o tema.");
+    throw new Error("Erro ao sistematizar dados. Certifique-se de informar o conteúdo e o verbo base corretamente.");
   }
 }
