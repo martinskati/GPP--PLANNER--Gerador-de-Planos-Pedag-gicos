@@ -1,7 +1,7 @@
 
 import React from 'react';
 import { LessonPlan } from '../types';
-import { Printer, RefreshCw, CheckCircle2, ListChecks, Target, Presentation, ClipboardCheck, Layers, HeartHandshake } from 'lucide-react';
+import { Printer, RefreshCw, CheckCircle2, ListChecks, Target, Presentation, ClipboardCheck, Layers, HeartHandshake, User } from 'lucide-react';
 
 interface PlanResultProps {
   plan: LessonPlan;
@@ -107,7 +107,7 @@ const PlanResult: React.FC<PlanResultProps> = ({ plan, onReset }) => {
             
             <div className="grid md:grid-cols-2 gap-10">
               <div className="space-y-4">
-                <h3 className="text-[10px] font-black text-emerald-800 uppercase tracking-widest ml-2">Objeto de Conhecimento</h3>
+                <h3 className="text-[10px] font-black text-emerald-800 uppercase tracking-widest ml-2 italic">O que será feito na aula</h3>
                 <div className="bg-slate-50 p-8 rounded-[2rem] border border-slate-200 h-full">
                   <div className="text-sm leading-relaxed font-semibold text-slate-700">
                     {plan.development.what}
@@ -116,7 +116,7 @@ const PlanResult: React.FC<PlanResultProps> = ({ plan, onReset }) => {
               </div>
               
               <div className="space-y-4">
-                <h3 className="text-[10px] font-black text-emerald-800 uppercase tracking-widest ml-2">Ações e Mediação</h3>
+                <h3 className="text-[10px] font-black text-emerald-800 uppercase tracking-widest ml-2 italic">Como será feito a aula</h3>
                 <div className="bg-slate-50 p-8 rounded-[2rem] border border-slate-200 h-full">
                   <div className="text-sm leading-relaxed font-semibold text-slate-700">
                     {plan.development.how}
@@ -165,6 +165,16 @@ const PlanResult: React.FC<PlanResultProps> = ({ plan, onReset }) => {
               </div>
             </section>
           </div>
+
+          {/* Assinatura do Professor */}
+          <section className="pt-12 mt-12 border-t-2 border-slate-50 flex flex-col items-center justify-center">
+            <div className="w-64 h-[1px] bg-slate-300 mb-2"></div>
+            <div className="flex items-center gap-2 text-slate-900 font-bold text-lg">
+              <User className="w-5 h-5 text-emerald-800" />
+              <span>Prof. {plan.teacherName}</span>
+            </div>
+            <p className="text-[10px] font-black text-emerald-800 uppercase tracking-widest mt-1">Autor da Proposta Pedagógica</p>
+          </section>
         </div>
 
         {/* Rodapé */}

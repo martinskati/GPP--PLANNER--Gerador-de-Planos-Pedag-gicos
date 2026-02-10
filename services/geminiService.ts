@@ -21,15 +21,16 @@ const SYSTEM_INSTRUCTION = `Você é um Consultor Pedagógico Institucional de a
 CONSIDERE OS DADOS OBRIGATÓRIOS INFORMADOS:
 1. Conteúdo.
 2. Verbo base da habilidade (BNCC/Bloom).
-3. Quantidade de alunos (Ajuste a dinâmica de grupo e tempo).
-4. Característica da turma (Ex: se for agitada, proponha atividades de maior engajamento prático; se for heterogênea, use tutorias entre pares).
-5. Perfil de inclusão (Adapte estritamente para TEA, TDAH, Dislexia, Baixa Visão, etc., se mencionado).
+3. Quantidade de alunos.
+4. Característica da turma.
+5. Perfil de inclusão.
+6. Nome do Professor (Inclua no campo teacherName do JSON exatamente como informado).
 
 DIRETRIZES DE ESCRITA:
 - Metodologia: Use termos técnicos (Ex: Sala de Aula Invertida, Rotação por Estações, Gamificação).
 - Objetivos de Aprendizagem: Use o VERBO BASE informado pelo professor para determinar a complexidade (Taxonomia de Bloom).
-- Desenvolvimento (O QUE): Parágrafo único, foco nos CONCEITOS e OBJETO DE CONHECIMENTO.
-- Desenvolvimento (COMO): Parágrafo único, narrativa do PASSO A PASSO, considerando a característica da turma.
+- Desenvolvimento (O QUE SERÁ FEITO NA AULA): Parágrafo único, foco nos CONCEITOS e OBJETO DE CONHECIMENTO.
+- Desenvolvimento (COMO SERÁ FEITO A AULA): Parágrafo único, narrativa do PASSO A PASSO, considerando a característica da turma.
 
 ${AVAILABLE_SKILLS}
 
@@ -42,6 +43,7 @@ const lessonPlanSchema = {
     discipline: { type: Type.STRING },
     content: { type: Type.STRING },
     context: { type: Type.STRING },
+    teacherName: { type: Type.STRING },
     learningObjectives: {
       type: Type.ARRAY,
       items: { type: Type.STRING },
@@ -60,8 +62,8 @@ const lessonPlanSchema = {
     development: {
       type: Type.OBJECT,
       properties: {
-        what: { type: Type.STRING, description: "O que será feito (Conceitos)." },
-        how: { type: Type.STRING, description: "Como será feito (Passo a passo considerando característica da turma)." }
+        what: { type: Type.STRING, description: "O que será feito na aula." },
+        how: { type: Type.STRING, description: "Como será feito a aula." }
       },
       required: ["what", "how"]
     },
@@ -74,7 +76,7 @@ const lessonPlanSchema = {
       description: "Instrumentos de avaliação."
     }
   },
-  required: ["discipline", "content", "learningObjectives", "skills", "methodology", "inclusionStrategies", "development", "learningEvidence", "assessmentInstruments"]
+  required: ["discipline", "content", "learningObjectives", "skills", "methodology", "inclusionStrategies", "development", "learningEvidence", "assessmentInstruments", "teacherName"]
 };
 
 export async function generateLessonPlan(teacherText: string): Promise<LessonPlan> {
@@ -85,7 +87,7 @@ export async function generateLessonPlan(teacherText: string): Promise<LessonPla
       model: "gemini-3-pro-preview",
       contents: `O professor forneceu os seguintes dados estruturados: "${teacherText}".
       Por favor, sistematize o plano de aula respeitando a quantidade de alunos e o perfil da turma informados. 
-      Garanta que o nível dos objetivos corresponda ao verbo base indicado.`,
+      Garanta que o nível dos objetivos corresponda ao verbo base indicado. O nome do professor deve ser mantido para a assinatura final.`,
       config: {
         systemInstruction: SYSTEM_INSTRUCTION,
         responseMimeType: "application/json",

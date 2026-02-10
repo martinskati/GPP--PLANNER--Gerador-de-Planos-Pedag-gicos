@@ -7,10 +7,11 @@ import Header from './components/Header';
 import Footer from './components/Footer';
 import PlanResult from './components/PlanResult';
 import HistoryDrawer from './components/HistoryDrawer';
-import { BookOpen, Send, Loader2, Info, MessageSquare, Star, CheckCircle, ClipboardList, Users, AlertCircle } from 'lucide-react';
+import { BookOpen, Send, Loader2, Info, MessageSquare, Star, CheckCircle, ClipboardList, Users, AlertCircle, User } from 'lucide-react';
 
 const App: React.FC = () => {
   const [inputText, setInputText] = useState('');
+  const [teacherName, setTeacherName] = useState('');
   const [feedbackText, setFeedbackText] = useState('');
   const [feedbackStatus, setFeedbackStatus] = useState<'idle' | 'sending' | 'success'>('idle');
   
@@ -34,12 +35,15 @@ const App: React.FC = () => {
 
   const handleSubmit = useCallback(async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!inputText.trim()) return;
+    if (!inputText.trim() || !teacherName.trim()) return;
 
     setState(prev => ({ ...prev, isGenerating: true, error: null }));
     
+    // Combina o nome do professor com os dados para o prompt
+    const fullInput = `Nome do Professor: ${teacherName}\n${inputText}`;
+    
     try {
-      const generatedPlan = await generateLessonPlan(inputText);
+      const generatedPlan = await generateLessonPlan(fullInput);
       storageService.savePlan(generatedPlan);
       setHistory(storageService.getHistory());
 
@@ -56,7 +60,7 @@ const App: React.FC = () => {
         error: err.message || "Ocorreu um erro inesperado."
       }));
     }
-  }, [inputText]);
+  }, [inputText, teacherName]);
 
   const handleSendFeedback = (e: React.FormEvent) => {
     e.preventDefault();
@@ -73,6 +77,7 @@ const App: React.FC = () => {
   const handleReset = () => {
     setState({ isGenerating: false, plan: null, error: null, showHistory: false });
     setInputText('');
+    setTeacherName('');
   };
 
   const handleSelectHistoryPlan = (savedPlan: SavedLessonPlan) => {
@@ -135,14 +140,14 @@ const App: React.FC = () => {
                   <div className="bg-emerald-800 text-white text-[10px] font-bold px-2 py-0.5 rounded mt-0.5">3</div>
                   <div className="text-xs">
                     <span className="font-bold text-emerald-900 block">Dados da Turma</span>
-                    Quantidade de alunos e comportamento (Ex: agitada, heterogênea).
+                    Quantidade de alunos e comportamento.
                   </div>
                 </div>
                 <div className="bg-white/60 p-3 rounded-xl border border-emerald-200/50 flex items-start space-x-3">
                   <div className="bg-emerald-800 text-white text-[10px] font-bold px-2 py-0.5 rounded mt-0.5">4</div>
                   <div className="text-xs">
                     <span className="font-bold text-emerald-900 block">Perfil de Inclusão</span>
-                    TEA, TDAH, Baixa Visão, Dislexia ou sem especificidades.
+                    TEA, TDAH ou sem especificidades.
                   </div>
                 </div>
               </div>
@@ -164,23 +169,45 @@ const App: React.FC = () => {
                 </div>
               </div>
 
-              <form onSubmit={handleSubmit} className="space-y-4 relative z-10">
-                <textarea
-                  value={inputText}
-                  onChange={(e) => setInputText(e.target.value)}
-                  placeholder={`Dados obrigatórios para o plano:\n\nConteúdo: \nVerbo base (BNCC): \nQuantidade de alunos: \nCaracterística da turma: \nPerfil de inclusão:`}
-                  className="w-full h-64 p-5 rounded-xl bg-slate-50 border border-slate-200 focus:ring-2 focus:ring-emerald-800 focus:border-transparent transition-all outline-none resize-none text-slate-800 placeholder-slate-400 leading-relaxed text-sm font-medium"
-                  disabled={state.isGenerating}
-                />
+              <form onSubmit={handleSubmit} className="space-y-6 relative z-10">
+                {/* Novo Campo para o Nome do Professor */}
+                <div className="space-y-2">
+                  <label className="text-[11px] font-black text-emerald-800 uppercase tracking-widest flex items-center gap-2">
+                    <User className="w-3.5 h-3.5" />
+                    Nome Completo do Professor
+                  </label>
+                  <input
+                    type="text"
+                    value={teacherName}
+                    onChange={(e) => setTeacherName(e.target.value)}
+                    placeholder="Sua assinatura no plano..."
+                    className="w-full p-4 rounded-xl bg-slate-50 border border-slate-200 focus:ring-2 focus:ring-emerald-800 focus:border-transparent transition-all outline-none text-sm font-semibold"
+                    disabled={state.isGenerating}
+                  />
+                </div>
+
+                <div className="space-y-2">
+                  <label className="text-[11px] font-black text-emerald-800 uppercase tracking-widest flex items-center gap-2">
+                    <ClipboardList className="w-3.5 h-3.5" />
+                    Detalhamento do Plano
+                  </label>
+                  <textarea
+                    value={inputText}
+                    onChange={(e) => setInputText(e.target.value)}
+                    placeholder={`Dados obrigatórios para o plano:\n\nConteúdo: \nVerbo base (BNCC): \nQuantidade de alunos: \nCaracterística da turma: \nPerfil de inclusão:`}
+                    className="w-full h-64 p-5 rounded-xl bg-slate-50 border border-slate-200 focus:ring-2 focus:ring-emerald-800 focus:border-transparent transition-all outline-none resize-none text-slate-800 placeholder-slate-400 leading-relaxed text-sm font-medium"
+                    disabled={state.isGenerating}
+                  />
+                </div>
                 
                 <div className="flex flex-col md:flex-row items-center justify-between gap-4">
                   <div className="flex items-center text-[11px] text-slate-400 font-bold uppercase tracking-wider">
                     <AlertCircle className="w-4 h-4 mr-2 text-emerald-700" />
-                    O plano gerado respeita as diretrizes do SESI/BNCC
+                    O plano gerado respeita as diretrizes SESI/BNCC
                   </div>
                   <button
                     type="submit"
-                    disabled={state.isGenerating || !inputText.trim()}
+                    disabled={state.isGenerating || !inputText.trim() || !teacherName.trim()}
                     className="w-full md:w-auto flex items-center justify-center space-x-2 bg-emerald-800 hover:bg-emerald-900 disabled:bg-slate-200 disabled:text-slate-400 text-white px-8 py-3.5 rounded-xl font-bold transition-all shadow-lg active:scale-95"
                   >
                     {state.isGenerating ? (
@@ -191,7 +218,7 @@ const App: React.FC = () => {
                     ) : (
                       <>
                         <Send className="w-5 h-5" />
-                        <span>Gerar Plano de Aula</span>
+                        <span>Gerar Plano Assinado</span>
                       </>
                     )}
                   </button>

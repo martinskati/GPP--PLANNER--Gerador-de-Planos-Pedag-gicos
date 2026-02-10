@@ -3,14 +3,15 @@ export interface LessonPlan {
   discipline: string;
   content: string;
   context: string;
+  teacherName?: string; // Nome do professor para assinatura
   learningObjectives: string[];
-  skills: string[]; // Novo campo para Habilidades BNCC/SESI
+  skills: string[];
   methodology: string;
   development: {
     what: string;
     how: string;
   };
-  inclusionStrategies: string; // Novo campo para Adaptações Inclusivas
+  inclusionStrategies: string;
   learningEvidence: string;
   assessmentInstruments: string;
 }
