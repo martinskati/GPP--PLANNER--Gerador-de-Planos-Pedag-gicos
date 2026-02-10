@@ -24,59 +24,41 @@ CONSIDERE OS DADOS OBRIGATÓRIOS INFORMADOS:
 3. Quantidade de alunos.
 4. Característica da turma.
 5. Perfil de inclusão.
-6. Nome do Professor (Inclua no campo teacherName do JSON exatamente como informado).
+6. Nome do Professor.
 
 DIRETRIZES DE ESCRITA:
 - Metodologia: Use termos técnicos (Ex: Sala de Aula Invertida, Rotação por Estações, Gamificação).
-- Objetivos de Aprendizagem: Use o VERBO BASE informado pelo professor para determinar a complexidade (Taxonomia de Bloom).
-- Desenvolvimento (O QUE SERÁ FEITO NA AULA): Parágrafo único, foco nos CONCEITOS e OBJETO DE CONHECIMENTO.
-- Desenvolvimento (COMO SERÁ FEITO A AULA): Parágrafo único, narrativa do PASSO A PASSO, considerando a característica da turma.
+- ODS: Identifique de 1 a 3 Objetivos de Desenvolvimento Sustentável que se conectam ao conteúdo.
+- Socioemocional: Liste competências socioemocionais que serão estimuladas na aula (Ex: Empatia, Resiliência, Comunicação Assertiva).
+- Desenvolvimento (O QUE SERÁ FEITO): Foco nos CONCEITOS.
+- Desenvolvimento (COMO SERÁ FEITO): Narrativa do PASSO A PASSO, ajustada ao perfil da turma.
 
-${AVAILABLE_SKILLS}
-
-ADAPTAÇÕES ESPECÍFICAS:
-Se o professor indicar TEA, TDAH, Baixa Visão ou Dislexia, as "Estratégias de Inclusão" DEVEM ser personalizadas para essas condições, além de incluir princípios do DUA (Desenho Universal para Aprendizagem).`;
+${AVAILABLE_SKILLS}`;
 
 const lessonPlanSchema = {
   type: Type.OBJECT,
   properties: {
     discipline: { type: Type.STRING },
     content: { type: Type.STRING },
-    context: { type: Type.STRING },
     teacherName: { type: Type.STRING },
-    learningObjectives: {
-      type: Type.ARRAY,
-      items: { type: Type.STRING },
-      description: "Objetivos alinhados ao verbo de Bloom solicitado."
-    },
-    skills: {
-      type: Type.ARRAY,
-      items: { type: Type.STRING },
-      description: "Código e descrição da habilidade selecionada do banco."
-    },
+    ods: { type: Type.ARRAY, items: { type: Type.STRING }, description: "Lista de ODS (Ex: ODS 4 - Educação de Qualidade)" },
+    socioemotionalSkills: { type: Type.ARRAY, items: { type: Type.STRING }, description: "Habilidades socioemocionais mobilizadas" },
+    learningObjectives: { type: Type.ARRAY, items: { type: Type.STRING } },
+    skills: { type: Type.ARRAY, items: { type: Type.STRING } },
     methodology: { type: Type.STRING },
-    inclusionStrategies: {
-      type: Type.STRING,
-      description: "Estratégias para os perfis de inclusão informados (TEA, TDAH, etc)."
-    },
+    inclusionStrategies: { type: Type.STRING },
     development: {
       type: Type.OBJECT,
       properties: {
-        what: { type: Type.STRING, description: "O que será feito na aula." },
-        how: { type: Type.STRING, description: "Como será feito a aula." }
+        what: { type: Type.STRING },
+        how: { type: Type.STRING }
       },
       required: ["what", "how"]
     },
-    learningEvidence: {
-      type: Type.STRING,
-      description: "Evidências de compreensão."
-    },
-    assessmentInstruments: {
-      type: Type.STRING,
-      description: "Instrumentos de avaliação."
-    }
+    learningEvidence: { type: Type.STRING },
+    assessmentInstruments: { type: Type.STRING }
   },
-  required: ["discipline", "content", "learningObjectives", "skills", "methodology", "inclusionStrategies", "development", "learningEvidence", "assessmentInstruments", "teacherName"]
+  required: ["discipline", "content", "learningObjectives", "skills", "methodology", "inclusionStrategies", "development", "learningEvidence", "assessmentInstruments", "teacherName", "ods", "socioemotionalSkills"]
 };
 
 export async function generateLessonPlan(teacherText: string): Promise<LessonPlan> {
@@ -85,9 +67,7 @@ export async function generateLessonPlan(teacherText: string): Promise<LessonPla
   try {
     const response = await ai.models.generateContent({
       model: "gemini-3-pro-preview",
-      contents: `O professor forneceu os seguintes dados estruturados: "${teacherText}".
-      Por favor, sistematize o plano de aula respeitando a quantidade de alunos e o perfil da turma informados. 
-      Garanta que o nível dos objetivos corresponda ao verbo base indicado. O nome do professor deve ser mantido para a assinatura final.`,
+      contents: teacherText,
       config: {
         systemInstruction: SYSTEM_INSTRUCTION,
         responseMimeType: "application/json",
@@ -99,6 +79,6 @@ export async function generateLessonPlan(teacherText: string): Promise<LessonPla
     return JSON.parse(response.text || "{}") as LessonPlan;
   } catch (error) {
     console.error("Erro ao gerar plano:", error);
-    throw new Error("Erro ao sistematizar dados. Certifique-se de informar o conteúdo e o verbo base corretamente.");
+    throw new Error("Erro na sistematização. Verifique os dados informados.");
   }
 }

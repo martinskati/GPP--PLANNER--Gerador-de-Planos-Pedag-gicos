@@ -3,7 +3,7 @@ export interface LessonPlan {
   discipline: string;
   content: string;
   context: string;
-  teacherName?: string; // Nome do professor para assinatura
+  teacherName?: string;
   learningObjectives: string[];
   skills: string[];
   methodology: string;
@@ -14,11 +14,13 @@ export interface LessonPlan {
   inclusionStrategies: string;
   learningEvidence: string;
   assessmentInstruments: string;
+  ods?: string[]; // Objetivos de Desenvolvimento Sustentável
+  socioemotionalSkills?: string[]; // Habilidades Socioemocionais
 }
 
 export interface SavedLessonPlan extends LessonPlan {
   id: string;
-  createdAt: string; // ISO Date string
+  createdAt: string;
 }
 
 export interface AppState {
