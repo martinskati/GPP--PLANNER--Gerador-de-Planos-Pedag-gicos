@@ -8,7 +8,7 @@ import Footer from './components/Footer';
 import PlanResult from './components/PlanResult';
 import HistoryDrawer from './components/HistoryDrawer';
 import FeedbackWidget from './components/FeedbackWidget';
-import { BookOpen, Send, Loader2, ClipboardList, AlertCircle, User, XCircle } from 'lucide-react';
+import { BookOpen, Send, Loader2, ClipboardList, AlertCircle, User, XCircle, BrainCircuit } from 'lucide-react';
 
 const App: React.FC = () => {
   const [inputText, setInputText] = useState('');
@@ -41,12 +41,15 @@ const App: React.FC = () => {
     setState(prev => ({ ...prev, isGenerating: true, error: null }));
     
     try {
-      const generatedPlan = await generateLessonPlan(inputText);
-      // Garante que o nome do professor no plano seja o que ele digitou no formulário
+      // Coleta as últimas 5 metodologias para enviar ao Gemini como contexto de "o que evitar repetir"
+      const recentMethods = history.slice(0, 5).map(p => `${p.content}: ${p.methodology}`);
+      
+      const generatedPlan = await generateLessonPlan(inputText, recentMethods);
       generatedPlan.teacherName = teacherName;
       
       storageService.savePlan(generatedPlan);
-      setHistory(storageService.getHistory());
+      const updatedHistory = storageService.getHistory();
+      setHistory(updatedHistory);
 
       setState({
         isGenerating: false,
@@ -62,7 +65,7 @@ const App: React.FC = () => {
         error: err.message || "Não foi possível gerar o plano agora. Tente novamente em alguns instantes."
       }));
     }
-  }, [inputText, teacherName]);
+  }, [inputText, teacherName, history]);
 
   const handleReset = () => {
     setState({ isGenerating: false, plan: null, error: null, showHistory: false });
@@ -115,13 +118,18 @@ const App: React.FC = () => {
               </div>
             )}
 
-            <div className="bg-emerald-50 border border-emerald-100 rounded-2xl p-6 shadow-sm">
-              <div className="flex items-center space-x-3 mb-4">
+            <div className="bg-emerald-50 border border-emerald-100 rounded-2xl p-6 shadow-sm relative overflow-hidden">
+              <div className="absolute top-0 right-0 p-4 opacity-10">
+                <BrainCircuit className="w-24 h-24 text-emerald-900" />
+              </div>
+              <div className="flex items-center space-x-3 mb-4 relative z-10">
                 <ClipboardList className="text-emerald-800 w-6 h-6" />
                 <h2 className="text-lg font-bold text-emerald-900">Guia de Sistematização</h2>
               </div>
-              <p className="text-sm text-emerald-800/80 mb-6 font-medium">Preencha os campos abaixo para qualificar sua proposta pedagógica:</p>
-              <div className="grid md:grid-cols-2 gap-4 text-xs">
+              <p className="text-sm text-emerald-800/80 mb-6 font-medium relative z-10">
+                O assistente agora possui <span className="font-black underline">Memória Ativa</span>. Ele analisará seus planos anteriores para sugerir metodologias inéditas.
+              </p>
+              <div className="grid md:grid-cols-2 gap-4 text-xs relative z-10">
                 {[
                   { id: 1, label: "Conteúdo", desc: "Assunto principal que será abordado." },
                   { id: 2, label: "Verbo norteador da habilidade", desc: "O que o aluno deve ser capaz de fazer." },
@@ -167,7 +175,7 @@ const App: React.FC = () => {
                 
                 <div className="flex flex-col md:flex-row items-center justify-between gap-4">
                   <div className="flex items-center text-[11px] text-slate-400 font-bold uppercase tracking-wider">
-                    <AlertCircle className="w-4 h-4 mr-2 text-emerald-700" /> Alinhamento BNCC, ODS e DUA
+                    <BrainCircuit className="w-4 h-4 mr-2 text-emerald-700 animate-pulse" /> Inteligência com Contexto Ativo (BNCC, ODS e DUA)
                   </div>
                   <button
                     type="submit" 
@@ -175,7 +183,7 @@ const App: React.FC = () => {
                     className="w-full md:w-auto flex items-center justify-center space-x-2 bg-emerald-800 hover:bg-emerald-900 disabled:bg-slate-300 text-white px-8 py-4 rounded-xl font-bold transition-all shadow-lg active:scale-95"
                   >
                     {state.isGenerating ? (
-                      <><Loader2 className="w-5 h-5 animate-spin" /><span>Processando Ideia...</span></>
+                      <><Loader2 className="w-5 h-5 animate-spin" /><span>Consultando Histórico e Gerando...</span></>
                     ) : (
                       <><Send className="w-5 h-5" /><span>Sistematizar Agora</span></>
                     )}

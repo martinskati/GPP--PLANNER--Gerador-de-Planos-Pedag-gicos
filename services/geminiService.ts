@@ -16,15 +16,21 @@ BANCO DE HABILIDADES ESTRUTURANTES (BNCC):
 10. EM13LP51.a.42 - Análise de obras artísticas e culturais.
 `;
 
-const SYSTEM_INSTRUCTION = `Você é um Consultor Pedagógico Institucional de alto nível. 
-Sua tarefa é ORGANIZAR, SISTEMATIZAR e QUALIFICAR a ideia do professor, transformando-a em um plano de aula técnico e estruturado seguindo o padrão BNCC.
+const SYSTEM_INSTRUCTION = `Você é um Consultor Pedagógico Institucional de alto nível com MEMÓRIA ATIVA de produções anteriores.
+Sua tarefa é ORGANIZAR, SISTEMATIZAR e QUALIFICAR a ideia do professor em um plano técnico BNCC.
+
+DIRETRIZ DE ORIGINALIDADE:
+- Analise a seção 'METODOLOGIAS_RECENTES' fornecida no prompt.
+- VOCÊ NÃO DEVE REPETIR as mesmas abordagens ou estratégias didáticas listadas lá.
+- Se o histórico mostrar muitas aulas teóricas, proponha algo prático (mão na massa).
+- Busque diversificar entre: Aprendizagem Baseada em Problemas (PBL), Sala de Aula Invertida, Gamificação, Design Thinking, Cultura Maker, etc.
 
 REGRAS OBRIGATÓRIAS:
-1. ODS: Escolha e liste de 1 a 3 Objetivos de Desenvolvimento Sustentável relacionados.
-2. SOCIOEMOCIONAL: Identifique competências socioemocionais claras que serão desenvolvidas.
-3. INCLUSÃO: Utilize estratégias baseadas no Desenho Universal para a Aprendizagem (DUA).
-4. BLOOM: Utilize verbos de ação adequados da Taxonomia de Bloom para os objetivos.
-5. HABILIDADES: Utilize preferencialmente as habilidades do banco fornecido.
+1. ODS: Escolha de 1 a 3 Objetivos relacionados.
+2. SOCIOEMOCIONAL: Identifique competências claras.
+3. INCLUSÃO: Utilize estratégias baseadas em DUA.
+4. BLOOM: Utilize verbos de ação adequados nos objetivos.
+5. HABILIDADES: Utilize preferencialmente as do banco fornecido.
 `;
 
 const lessonPlanSchema = {
@@ -59,20 +65,25 @@ const lessonPlanSchema = {
   ]
 };
 
-export async function generateLessonPlan(teacherText: string): Promise<LessonPlan> {
+export async function generateLessonPlan(teacherText: string, recentMethodologies: string[] = []): Promise<LessonPlan> {
   const apiKey = process.env.API_KEY;
   
   if (!apiKey || apiKey === "undefined" || apiKey === "") {
-    throw new Error("Configuração ausente: API_KEY não detectada nas variáveis de ambiente do site.");
+    throw new Error("Configuração ausente: API_KEY não detectada.");
   }
 
   const ai = new GoogleGenAI({ apiKey });
   
+  // Constrói o histórico para o modelo evitar repetições
+  const historyContext = recentMethodologies.length > 0 
+    ? `METODOLOGIAS_RECENTES (EVITE REPETIR ESTAS ESTRATÉGIAS):\n${recentMethodologies.join('\n- ')}`
+    : "METODOLOGIAS_RECENTES: Nenhuma produção anterior registrada. Sinta-se livre para inovar.";
+
   try {
     const response = await ai.models.generateContent({
-      // Mudança para o modelo Flash que tem limites de cota muito maiores
       model: "gemini-3-flash-preview",
       contents: [
+        { text: historyContext },
         { text: `Banco de Habilidades Disponíveis: ${AVAILABLE_SKILLS}` },
         { text: `Ideia do Professor para Sistematização: ${teacherText}` }
       ],
@@ -80,28 +91,20 @@ export async function generateLessonPlan(teacherText: string): Promise<LessonPla
         systemInstruction: SYSTEM_INSTRUCTION,
         responseMimeType: "application/json",
         responseSchema: lessonPlanSchema,
-        temperature: 0.5,
+        temperature: 0.7, // Aumentado levemente para maior criatividade
       },
     });
 
     const text = response.text;
     if (!text) {
-      throw new Error("A Inteligência Artificial não conseguiu processar os dados.");
+      throw new Error("A Inteligência Artificial não retornou dados.");
     }
     
     return JSON.parse(text) as LessonPlan;
   } catch (error: any) {
-    console.error("Erro na API Gemini:", error);
-    
-    // Tratamento específico para erro de cota (429)
-    if (error.message?.includes("429") || error.message?.includes("QUOTA_EXHAUSTED")) {
-      throw new Error("Limite de uso atingido. O Google permite um número limitado de planos gratuitos por minuto/dia. Por favor, aguarde cerca de 60 segundos e tente novamente.");
+    if (error.message?.includes("429")) {
+      throw new Error("Limite de uso atingido. Aguarde 60 segundos.");
     }
-    
-    if (error.message?.includes("API_KEY") || error.status === 403) {
-      throw new Error("Chave de API inválida ou sem permissão para este modelo.");
-    }
-    
-    throw new Error("Ocorreu uma instabilidade na conexão com o assistente. Por favor, tente novamente em instantes.");
+    throw new Error("Erro na geração do plano. Tente novamente.");
   }
 }
