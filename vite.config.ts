@@ -6,7 +6,6 @@ export default defineConfig({
   plugins: [react()],
   base: './',
   define: {
-    // Substitui a referência global para evitar erro de 'process is not defined'
     'process.env.API_KEY': JSON.stringify(process.env.API_KEY || '')
   },
   build: {
