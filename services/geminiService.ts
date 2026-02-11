@@ -61,13 +61,13 @@ const lessonPlanSchema = {
 };
 
 export async function generateLessonPlan(teacherText: string): Promise<LessonPlan> {
-  const GEMINI_API_KEY = import.meta.env.VITE_GEMINI_API_KEY;
+  const apiKey = process.env.API_KEY;
   
-  if (!GEMINI_API_KEY) {
-    throw new Error("Configuração ausente: VITE_GEMINI_API_KEY não encontrada no ambiente de hospedagem.");
+  if (!apiKey || apiKey === "undefined") {
+    throw new Error("Configuração ausente: API_KEY não encontrada. Certifique-se de configurar a variável de ambiente no seu painel de hospedagem.");
   }
 
-  const ai = new GoogleGenAI({ apiKey: GEMINI_API_KEY });
+  const ai = new GoogleGenAI({ apiKey });
   
   try {
     const response = await ai.models.generateContent({
@@ -83,15 +83,15 @@ export async function generateLessonPlan(teacherText: string): Promise<LessonPla
 
     const text = response.text;
     if (!text) {
-      throw new Error("A Inteligência Artificial retornou uma resposta vazia. Tente detalhar mais sua ideia.");
+      throw new Error("A Inteligência Artificial não retornou dados válidos.");
     }
     
     return JSON.parse(text) as LessonPlan;
   } catch (error: any) {
-    console.error("Erro detalhado na API Gemini:", error);
-    if (error.message?.includes("API_KEY") || error.message?.includes("403") || error.message?.includes("401")) {
-      throw new Error("Erro de autenticação: A chave da API é inválida, expirou ou não tem permissão para este modelo.");
+    console.error("Erro na API Gemini:", error);
+    if (error.message?.includes("API_KEY") || error.status === 403) {
+      throw new Error("Erro de Chave: A API_KEY fornecida é inválida ou não possui as permissões necessárias.");
     }
-    throw new Error("Não foi possível gerar o plano agora. Verifique a variável VITE_GEMINI_API_KEY na Hostinger.");
+    throw new Error(`Erro ao gerar plano: ${error.message || "Tente novamente mais tarde."}`);
   }
 }
