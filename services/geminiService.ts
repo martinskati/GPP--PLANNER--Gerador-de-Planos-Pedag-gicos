@@ -61,13 +61,14 @@ const lessonPlanSchema = {
 };
 
 export async function generateLessonPlan(teacherText: string): Promise<LessonPlan> {
+  // A variável process.env.API_KEY é injetada pelo Vite via vite.config.ts
   const apiKey = process.env.API_KEY;
   
-  if (!apiKey || apiKey === "undefined") {
-    throw new Error("Configuração ausente: API_KEY não encontrada. Certifique-se de configurar a variável de ambiente no seu painel de hospedagem.");
+  if (!apiKey || apiKey === "undefined" || apiKey === "") {
+    throw new Error("Erro de Configuração: A chave da API (VITE_GEMINI_API_KEY) não foi detectada. Verifique as variáveis de ambiente na sua hospedagem.");
   }
 
-  const ai = new GoogleGenAI({ apiKey });
+  const ai = new GoogleGenAI({ apiKey: apiKey });
   
   try {
     const response = await ai.models.generateContent({
@@ -83,15 +84,15 @@ export async function generateLessonPlan(teacherText: string): Promise<LessonPla
 
     const text = response.text;
     if (!text) {
-      throw new Error("A Inteligência Artificial não retornou dados válidos.");
+      throw new Error("A Inteligência Artificial não retornou uma resposta válida. Tente detalhar mais sua proposta.");
     }
     
     return JSON.parse(text) as LessonPlan;
   } catch (error: any) {
     console.error("Erro na API Gemini:", error);
-    if (error.message?.includes("API_KEY") || error.status === 403) {
-      throw new Error("Erro de Chave: A API_KEY fornecida é inválida ou não possui as permissões necessárias.");
+    if (error.message?.includes("API_KEY") || error.status === 403 || error.status === 401) {
+      throw new Error("Erro de Autenticação: A chave da API é inválida ou o projeto não tem permissão para usar o modelo Gemini 3 Pro.");
     }
-    throw new Error(`Erro ao gerar plano: ${error.message || "Tente novamente mais tarde."}`);
+    throw new Error(`Falha ao sistematizar plano: ${error.message || "Verifique sua conexão e tente novamente."}`);
   }
 }

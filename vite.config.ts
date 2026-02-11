@@ -6,7 +6,8 @@ export default defineConfig({
   plugins: [react()],
   base: './',
   define: {
-    'process.env.API_KEY': JSON.stringify(process.env.API_KEY)
+    // Mapeia tanto API_KEY quanto VITE_GEMINI_API_KEY para process.env.API_KEY usado no código
+    'process.env.API_KEY': JSON.stringify(process.env.VITE_GEMINI_API_KEY || process.env.API_KEY)
   },
   build: {
     outDir: 'dist',
