@@ -6,13 +6,14 @@ export default defineConfig({
   plugins: [react()],
   base: './',
   define: {
-    // Injeta a variável de ambiente do build para o código do cliente
-    'process.env.API_KEY': JSON.stringify(process.env.API_KEY)
+    // Substitui a referência global para evitar erro de 'process is not defined'
+    'process.env.API_KEY': JSON.stringify(process.env.API_KEY || '')
   },
   build: {
     outDir: 'dist',
     emptyOutDir: true,
-    sourcemap: false
+    sourcemap: false,
+    target: 'esnext'
   },
   server: {
     port: 3000

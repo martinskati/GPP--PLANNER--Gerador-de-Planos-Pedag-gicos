@@ -16,12 +16,15 @@ BANCO DE HABILIDADES ESTRUTURANTES (SESI/BNCC):
 10. SESI.EM13LP51.a.42 - Análise de obras artísticas e culturais.
 `;
 
-const SYSTEM_INSTRUCTION = `Você é um Consultor Pedagógico Institucional. Transforme a ideia do professor em um plano técnico.
-REGRAS:
-1. ODS: Escolha de 1 a 3.
-2. SOCIOEMOCIONAL: Identifique competências claras.
-3. INCLUSÃO: Use estratégias de DUA.
-4. BLOOM: Use verbos de ação adequados.
+const SYSTEM_INSTRUCTION = `Você é um Consultor Pedagógico Institucional de alto nível. 
+Sua tarefa é ORGANIZAR, SISTEMATIZAR e QUALIFICAR a ideia do professor, transformando-a em um plano de aula técnico e estruturado.
+
+REGRAS OBRIGATÓRIAS:
+1. ODS: Escolha e liste de 1 a 3 Objetivos de Desenvolvimento Sustentável relacionados.
+2. SOCIOEMOCIONAL: Identifique competências socioemocionais claras que serão desenvolvidas.
+3. INCLUSÃO: Utilize estratégias baseadas no Desenho Universal para a Aprendizagem (DUA).
+4. BLOOM: Utilize verbos de ação adequados da Taxonomia de Bloom para os objetivos.
+5. HABILIDADES: Utilize preferencialmente as habilidades do banco abaixo:
 
 ${AVAILABLE_SKILLS}`;
 
@@ -58,7 +61,13 @@ const lessonPlanSchema = {
 };
 
 export async function generateLessonPlan(teacherText: string): Promise<LessonPlan> {
-  const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
+  const apiKey = process.env.API_KEY;
+  
+  if (!apiKey) {
+    throw new Error("Configuração ausente: API_KEY não encontrada no ambiente de hospedagem.");
+  }
+
+  const ai = new GoogleGenAI({ apiKey });
   
   try {
     const response = await ai.models.generateContent({
@@ -73,11 +82,16 @@ export async function generateLessonPlan(teacherText: string): Promise<LessonPla
     });
 
     const text = response.text;
-    if (!text) throw new Error("A IA não retornou um plano válido.");
+    if (!text) {
+      throw new Error("A Inteligência Artificial retornou uma resposta vazia. Tente detalhar mais sua ideia.");
+    }
     
     return JSON.parse(text) as LessonPlan;
-  } catch (error) {
-    console.error("Erro Gemini:", error);
-    throw new Error("Erro ao conectar com o assistente. Verifique se a API_KEY foi configurada na Hostinger.");
+  } catch (error: any) {
+    console.error("Erro detalhado na API Gemini:", error);
+    if (error.message?.includes("API_KEY")) {
+      throw new Error("Erro de autenticação: A chave da API é inválida ou expirou.");
+    }
+    throw new Error("Não foi possível gerar o plano agora. Verifique sua conexão ou as variáveis de ambiente na Hostinger.");
   }
 }
