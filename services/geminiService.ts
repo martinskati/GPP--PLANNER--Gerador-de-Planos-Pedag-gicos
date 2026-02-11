@@ -30,7 +30,7 @@ const lessonPlanSchema = {
   properties: {
     discipline: { type: Type.STRING },
     content: { type: Type.STRING },
-    context: { type: Type.STRING, description: "Contextualização da aula e da turma." },
+    context: { type: Type.STRING },
     teacherName: { type: Type.STRING },
     ods: { type: Type.ARRAY, items: { type: Type.STRING } },
     socioemotionalSkills: { type: Type.ARRAY, items: { type: Type.STRING } },
@@ -58,10 +58,7 @@ const lessonPlanSchema = {
 };
 
 export async function generateLessonPlan(teacherText: string): Promise<LessonPlan> {
-  // Garantir acesso seguro à chave, mesmo que o process.env não esteja injetado corretamente no momento do build
-  const apiKey = (window as any).process?.env?.API_KEY || (import.meta as any).env?.VITE_API_KEY || "";
-  
-  const ai = new GoogleGenAI({ apiKey });
+  const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
   
   try {
     const response = await ai.models.generateContent({
@@ -76,11 +73,11 @@ export async function generateLessonPlan(teacherText: string): Promise<LessonPla
     });
 
     const text = response.text;
-    if (!text) throw new Error("Resposta vazia da IA.");
+    if (!text) throw new Error("A IA não retornou um plano válido.");
     
     return JSON.parse(text) as LessonPlan;
   } catch (error) {
-    console.error("Erro na API Gemini:", error);
-    throw new Error("Falha na comunicação com o assistente pedagógico. Verifique sua conexão ou tente novamente.");
+    console.error("Erro Gemini:", error);
+    throw new Error("Erro ao conectar com o assistente. Verifique se a API_KEY foi configurada na Hostinger.");
   }
 }
