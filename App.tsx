@@ -7,7 +7,7 @@ import Header from './components/Header';
 import Footer from './components/Footer';
 import PlanResult from './components/PlanResult';
 import HistoryDrawer from './components/HistoryDrawer';
-import { BookOpen, Send, Loader2, Info, MessageSquare, Star, CheckCircle, ClipboardList, AlertCircle, User, Globe, Heart } from 'lucide-react';
+import { BookOpen, Send, Loader2, Info, MessageSquare, Star, CheckCircle, ClipboardList, AlertCircle, User, Globe, Heart, XCircle } from 'lucide-react';
 
 const App: React.FC = () => {
   const [inputText, setInputText] = useState('');
@@ -52,10 +52,11 @@ const App: React.FC = () => {
         showHistory: false
       });
     } catch (err: any) {
+      console.error("Erro capturado no App:", err);
       setState(prev => ({
         ...prev,
         isGenerating: false,
-        error: err.message || "Ocorreu um erro inesperado."
+        error: err.message || "Não foi possível gerar o plano. Verifique a configuração da API_KEY."
       }));
     }
   }, [inputText, teacherName]);
@@ -104,6 +105,15 @@ const App: React.FC = () => {
         {!state.plan ? (
           <div className="space-y-10 animate-in fade-in duration-500">
             
+            {/* Mensagem de Erro */}
+            {state.error && (
+              <div className="bg-red-50 border border-red-200 rounded-xl p-4 flex items-center space-x-3 text-red-800 animate-in slide-in-from-top-2">
+                <XCircle className="w-5 h-5 shrink-0" />
+                <p className="text-sm font-bold">{state.error}</p>
+                <button onClick={() => setState(p => ({...p, error: null}))} className="ml-auto text-red-400 hover:text-red-600 font-bold text-xs uppercase">Fechar</button>
+              </div>
+            )}
+
             <div className="bg-emerald-50 border border-emerald-100 rounded-2xl p-6 shadow-sm">
               <div className="flex items-center space-x-3 mb-4">
                 <ClipboardList className="text-emerald-800 w-6 h-6" />
