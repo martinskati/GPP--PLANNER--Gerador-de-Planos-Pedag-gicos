@@ -61,13 +61,13 @@ const lessonPlanSchema = {
 };
 
 export async function generateLessonPlan(teacherText: string): Promise<LessonPlan> {
-  const apiKey = process.env.API_KEY;
+  const GEMINI_API_KEY = import.meta.env.VITE_GEMINI_API_KEY;
   
-  if (!apiKey) {
-    throw new Error("Configuração ausente: API_KEY não encontrada no ambiente de hospedagem.");
+  if (!GEMINI_API_KEY) {
+    throw new Error("Configuração ausente: VITE_GEMINI_API_KEY não encontrada no ambiente de hospedagem.");
   }
 
-  const ai = new GoogleGenAI({ apiKey });
+  const ai = new GoogleGenAI({ apiKey: GEMINI_API_KEY });
   
   try {
     const response = await ai.models.generateContent({
@@ -89,9 +89,9 @@ export async function generateLessonPlan(teacherText: string): Promise<LessonPla
     return JSON.parse(text) as LessonPlan;
   } catch (error: any) {
     console.error("Erro detalhado na API Gemini:", error);
-    if (error.message?.includes("API_KEY")) {
-      throw new Error("Erro de autenticação: A chave da API é inválida ou expirou.");
+    if (error.message?.includes("API_KEY") || error.message?.includes("403") || error.message?.includes("401")) {
+      throw new Error("Erro de autenticação: A chave da API é inválida, expirou ou não tem permissão para este modelo.");
     }
-    throw new Error("Não foi possível gerar o plano agora. Verifique sua conexão ou as variáveis de ambiente na Hostinger.");
+    throw new Error("Não foi possível gerar o plano agora. Verifique a variável VITE_GEMINI_API_KEY na Hostinger.");
   }
 }
