@@ -17,16 +17,15 @@ BANCO DE HABILIDADES ESTRUTURANTES (SESI/BNCC):
 `;
 
 const SYSTEM_INSTRUCTION = `Você é um Consultor Pedagógico Institucional de alto nível. 
-Sua tarefa é ORGANIZAR, SISTEMATIZAR e QUALIFICAR a ideia do professor, transformando-a em um plano de aula técnico e estruturado.
+Sua tarefa é ORGANIZAR, SISTEMATIZAR e QUALIFICAR a ideia do professor, transformando-a em um plano de aula técnico e estruturado seguindo o padrão SESI/BNCC.
 
 REGRAS OBRIGATÓRIAS:
 1. ODS: Escolha e liste de 1 a 3 Objetivos de Desenvolvimento Sustentável relacionados.
 2. SOCIOEMOCIONAL: Identifique competências socioemocionais claras que serão desenvolvidas.
 3. INCLUSÃO: Utilize estratégias baseadas no Desenho Universal para a Aprendizagem (DUA).
 4. BLOOM: Utilize verbos de ação adequados da Taxonomia de Bloom para os objetivos.
-5. HABILIDADES: Utilize preferencialmente as habilidades do banco abaixo:
-
-${AVAILABLE_SKILLS}`;
+5. HABILIDADES: Utilize preferencialmente as habilidades do banco fornecido.
+`;
 
 const lessonPlanSchema = {
   type: Type.OBJECT,
@@ -61,38 +60,48 @@ const lessonPlanSchema = {
 };
 
 export async function generateLessonPlan(teacherText: string): Promise<LessonPlan> {
-  // A variável process.env.API_KEY é injetada pelo Vite via vite.config.ts
   const apiKey = process.env.API_KEY;
   
   if (!apiKey || apiKey === "undefined" || apiKey === "") {
-    throw new Error("Erro de Configuração: A chave da API (VITE_GEMINI_API_KEY) não foi detectada. Verifique as variáveis de ambiente na sua hospedagem.");
+    throw new Error("Configuração ausente: API_KEY não detectada nas variáveis de ambiente do site.");
   }
 
-  const ai = new GoogleGenAI({ apiKey: apiKey });
+  const ai = new GoogleGenAI({ apiKey });
   
   try {
     const response = await ai.models.generateContent({
-      model: "gemini-3-pro-preview",
-      contents: teacherText,
+      // Mudança para o modelo Flash que tem limites de cota muito maiores
+      model: "gemini-3-flash-preview",
+      contents: [
+        { text: `Banco de Habilidades Disponíveis: ${AVAILABLE_SKILLS}` },
+        { text: `Ideia do Professor para Sistematização: ${teacherText}` }
+      ],
       config: {
         systemInstruction: SYSTEM_INSTRUCTION,
         responseMimeType: "application/json",
         responseSchema: lessonPlanSchema,
-        temperature: 0.4,
+        temperature: 0.5,
       },
     });
 
     const text = response.text;
     if (!text) {
-      throw new Error("A Inteligência Artificial não retornou uma resposta válida. Tente detalhar mais sua proposta.");
+      throw new Error("A Inteligência Artificial não conseguiu processar os dados.");
     }
     
     return JSON.parse(text) as LessonPlan;
   } catch (error: any) {
     console.error("Erro na API Gemini:", error);
-    if (error.message?.includes("API_KEY") || error.status === 403 || error.status === 401) {
-      throw new Error("Erro de Autenticação: A chave da API é inválida ou o projeto não tem permissão para usar o modelo Gemini 3 Pro.");
+    
+    // Tratamento específico para erro de cota (429)
+    if (error.message?.includes("429") || error.message?.includes("QUOTA_EXHAUSTED")) {
+      throw new Error("Limite de uso atingido. O Google permite um número limitado de planos gratuitos por minuto/dia. Por favor, aguarde cerca de 60 segundos e tente novamente.");
     }
-    throw new Error(`Falha ao sistematizar plano: ${error.message || "Verifique sua conexão e tente novamente."}`);
+    
+    if (error.message?.includes("API_KEY") || error.status === 403) {
+      throw new Error("Chave de API inválida ou sem permissão para este modelo.");
+    }
+    
+    throw new Error("Ocorreu uma instabilidade na conexão com o assistente. Por favor, tente novamente em instantes.");
   }
 }
