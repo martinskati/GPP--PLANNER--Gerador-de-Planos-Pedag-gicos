@@ -3,21 +3,21 @@ import { GoogleGenAI, Type } from "@google/genai";
 import { LessonPlan } from "../types";
 
 const AVAILABLE_SKILLS = `
-BANCO DE HABILIDADES ESTRUTURANTES (SESI/BNCC):
-1. SESI.EM13LGG204.c.16 - Negociar interesses comuns.
-2. SESI.EM13LP08.s.6 - Sintaxe do português.
-3. SESI.EM13LP01.c.17 - Produção de textos multimodais.
-4. SESI.EM13LP42.a.19 - Curadoria ética de informação.
-5. SESI.EM13LP02.a.3 - Coesão e coerência textual.
-6. SESI.EM13LP12.a.5 - Argumentação e fontes confiáveis.
-7. SESI.EM13LGG603.s.41 - Processos de criação artística.
-8. SESI.EM13LGG305.d.21 - Atuação social e política via linguagens.
-9. SESI.EM13LP17.c.23 - Roteirização de vídeos e mídias.
-10. SESI.EM13LP51.a.42 - Análise de obras artísticas e culturais.
+BANCO DE HABILIDADES ESTRUTURANTES (BNCC):
+1. EM13LGG204.c.16 - Negociar interesses comuns.
+2. EM13LP08.s.6 - Sintaxe do português.
+3. EM13LP01.c.17 - Produção de textos multimodais.
+4. EM13LP42.a.19 - Curadoria ética de informação.
+5. EM13LP02.a.3 - Coesão e coerência textual.
+6. EM13LP12.a.5 - Argumentação e fontes confiáveis.
+7. EM13LGG603.s.41 - Processos de criação artística.
+8. EM13LGG305.d.21 - Atuação social e política via linguagens.
+9. EM13LP17.c.23 - Roteirização de vídeos e mídias.
+10. EM13LP51.a.42 - Análise de obras artísticas e culturais.
 `;
 
 const SYSTEM_INSTRUCTION = `Você é um Consultor Pedagógico Institucional de alto nível. 
-Sua tarefa é ORGANIZAR, SISTEMATIZAR e QUALIFICAR a ideia do professor, transformando-a em um plano de aula técnico e estruturado seguindo o padrão SESI/BNCC.
+Sua tarefa é ORGANIZAR, SISTEMATIZAR e QUALIFICAR a ideia do professor, transformando-a em um plano de aula técnico e estruturado seguindo o padrão BNCC.
 
 REGRAS OBRIGATÓRIAS:
 1. ODS: Escolha e liste de 1 a 3 Objetivos de Desenvolvimento Sustentável relacionados.

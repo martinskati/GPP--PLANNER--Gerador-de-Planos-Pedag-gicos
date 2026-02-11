@@ -7,6 +7,7 @@ import Header from './components/Header';
 import Footer from './components/Footer';
 import PlanResult from './components/PlanResult';
 import HistoryDrawer from './components/HistoryDrawer';
+import FeedbackWidget from './components/FeedbackWidget';
 import { BookOpen, Send, Loader2, ClipboardList, AlertCircle, User, XCircle } from 'lucide-react';
 
 const App: React.FC = () => {
@@ -92,6 +93,8 @@ const App: React.FC = () => {
         onDeletePlan={handleDeletePlan}
       />
 
+      <FeedbackWidget />
+
       <main className="flex-grow container mx-auto px-4 py-8 max-w-5xl">
         {!state.plan ? (
           <div className="space-y-10 animate-in fade-in duration-500">
@@ -121,7 +124,7 @@ const App: React.FC = () => {
               <div className="grid md:grid-cols-2 gap-4 text-xs">
                 {[
                   { id: 1, label: "Conteúdo", desc: "Assunto principal que será abordado." },
-                  { id: 2, label: "Ação Esperada", desc: "O que o aluno deve ser capaz de fazer." },
+                  { id: 2, label: "Verbo norteador da habilidade", desc: "O que o aluno deve ser capaz de fazer." },
                   { id: 3, label: "Público-alvo", desc: "Série/Ano e características da turma." },
                   { id: 4, label: "Metodologia", desc: "Sua ideia inicial de como ensinar." }
                 ].map(item => (
@@ -164,7 +167,7 @@ const App: React.FC = () => {
                 
                 <div className="flex flex-col md:flex-row items-center justify-between gap-4">
                   <div className="flex items-center text-[11px] text-slate-400 font-bold uppercase tracking-wider">
-                    <AlertCircle className="w-4 h-4 mr-2 text-emerald-700" /> Alinhamento SESI/BNCC, ODS e DUA
+                    <AlertCircle className="w-4 h-4 mr-2 text-emerald-700" /> Alinhamento BNCC, ODS e DUA
                   </div>
                   <button
                     type="submit" 
