@@ -3,7 +3,7 @@ export interface LessonPlan {
   discipline: string;
   content: string;
   context: string;
-  teacherName?: string;
+  teacherName: string;
   learningObjectives: string[];
   skills: string[];
   methodology: string;
@@ -14,8 +14,8 @@ export interface LessonPlan {
   inclusionStrategies: string;
   learningEvidence: string;
   assessmentInstruments: string;
-  ods?: string[]; // Objetivos de Desenvolvimento Sustentável
-  socioemotionalSkills?: string[]; // Habilidades Socioemocionais
+  ods: string[];
+  socioemotionalSkills: string[];
 }
 
 export interface SavedLessonPlan extends LessonPlan {
