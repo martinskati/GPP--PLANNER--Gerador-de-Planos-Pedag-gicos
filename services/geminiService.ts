@@ -16,22 +16,16 @@ BANCO DE HABILIDADES ESTRUTURANTES (SESI/BNCC) - PRIORIDADE DE USO:
 10. SESI.EM13LP51.a.42 - Analisar obras significativas das artes visuais, da música, do teatro, da dança e das literaturas brasileiras e de outros países e povos, com olhar atento à diversidade de saberes, identidades e culturas, bem como os processos de disputa por legitimidade.
 `;
 
-const SYSTEM_INSTRUCTION = `Você é um Consultor Pedagógico Institucional de alto nível. Sua função é sistematizar a ideia autoral do professor em um plano de aula denso, técnico e humanizado.
+const SYSTEM_INSTRUCTION = `Você é um Consultor Pedagógico Institucional de alto nível especializado no sistema educacional brasileiro (BNCC/SESI). Sua função é transformar a ideia bruta de um professor em um plano de aula técnico, estruturado e inspirador.
 
-CONSIDERE OS DADOS OBRIGATÓRIOS INFORMADOS:
-1. Conteúdo.
-2. Verbo base da habilidade (BNCC/Bloom).
-3. Quantidade de alunos.
-4. Característica da turma.
-5. Perfil de inclusão.
-6. Nome do Professor.
-
-DIRETRIZES DE ESCRITA:
-- Metodologia: Use termos técnicos (Ex: Sala de Aula Invertida, Rotação por Estações, Gamificação).
-- ODS: Identifique de 1 a 3 Objetivos de Desenvolvimento Sustentável que se conectam ao conteúdo.
-- Socioemocional: Liste competências socioemocionais que serão estimuladas na aula (Ex: Empatia, Resiliência, Comunicação Assertiva).
-- Desenvolvimento (O QUE SERÁ FEITO): Foco nos CONCEITOS.
-- Desenvolvimento (COMO SERÁ FEITO): Narrativa do PASSO A PASSO, ajustada ao perfil da turma.
+REGRAS DE OURO:
+1. NOME DO PROFESSOR: Deve aparecer na assinatura final conforme informado.
+2. ODS: Selecione de 1 a 3 Objetivos de Desenvolvimento Sustentável da ONU que possuam relação direta ou transversal com o conteúdo.
+3. SOCIOEMOCIONAL: Identifique competências como Empatia, Pensamento Crítico, Autogestão ou Colaboração.
+4. METODOLOGIA: Utilize termos da educação moderna (Sala de Aula Invertida, Gamificação, etc).
+5. DESENVOLVIMENTO (O QUE): Descreva os conceitos e objetivos de conhecimento.
+6. DESENVOLVIMENTO (COMO): Descreva o passo a passo da aula considerando a turma informada.
+7. INCLUSÃO: Se mencionado TEA, TDAH ou outros, crie adaptações baseadas no DUA (Desenho Universal para Aprendizagem).
 
 ${AVAILABLE_SKILLS}`;
 
@@ -41,24 +35,53 @@ const lessonPlanSchema = {
     discipline: { type: Type.STRING },
     content: { type: Type.STRING },
     teacherName: { type: Type.STRING },
-    ods: { type: Type.ARRAY, items: { type: Type.STRING }, description: "Lista de ODS (Ex: ODS 4 - Educação de Qualidade)" },
-    socioemotionalSkills: { type: Type.ARRAY, items: { type: Type.STRING }, description: "Habilidades socioemocionais mobilizadas" },
-    learningObjectives: { type: Type.ARRAY, items: { type: Type.STRING } },
-    skills: { type: Type.ARRAY, items: { type: Type.STRING } },
+    ods: { 
+      type: Type.ARRAY, 
+      items: { type: Type.STRING },
+      description: "Lista de ODS (Ex: ODS 4 - Educação de Qualidade)"
+    },
+    socioemotionalSkills: { 
+      type: Type.ARRAY, 
+      items: { type: Type.STRING },
+      description: "Competências socioemocionais (Ex: Empatia, Colaboração)"
+    },
+    learningObjectives: { 
+      type: Type.ARRAY, 
+      items: { type: Type.STRING },
+      description: "Objetivos baseados na Taxonomia de Bloom e no verbo informado."
+    },
+    skills: { 
+      type: Type.ARRAY, 
+      items: { type: Type.STRING },
+      description: "Habilidades do banco SESI/BNCC fornecido."
+    },
     methodology: { type: Type.STRING },
     inclusionStrategies: { type: Type.STRING },
     development: {
       type: Type.OBJECT,
       properties: {
-        what: { type: Type.STRING },
-        how: { type: Type.STRING }
+        what: { type: Type.STRING, description: "O que será feito na aula." },
+        how: { type: Type.STRING, description: "Como será feito a aula." }
       },
       required: ["what", "how"]
     },
     learningEvidence: { type: Type.STRING },
     assessmentInstruments: { type: Type.STRING }
   },
-  required: ["discipline", "content", "learningObjectives", "skills", "methodology", "inclusionStrategies", "development", "learningEvidence", "assessmentInstruments", "teacherName", "ods", "socioemotionalSkills"]
+  required: [
+    "discipline", 
+    "content", 
+    "teacherName", 
+    "ods", 
+    "socioemotionalSkills", 
+    "learningObjectives", 
+    "skills", 
+    "methodology", 
+    "inclusionStrategies", 
+    "development", 
+    "learningEvidence", 
+    "assessmentInstruments"
+  ]
 };
 
 export async function generateLessonPlan(teacherText: string): Promise<LessonPlan> {
@@ -76,9 +99,12 @@ export async function generateLessonPlan(teacherText: string): Promise<LessonPla
       },
     });
 
-    return JSON.parse(response.text || "{}") as LessonPlan;
+    const text = response.text;
+    if (!text) throw new Error("A resposta do modelo está vazia.");
+    
+    return JSON.parse(text) as LessonPlan;
   } catch (error) {
     console.error("Erro ao gerar plano:", error);
-    throw new Error("Erro na sistematização. Verifique os dados informados.");
+    throw new Error("Erro na sistematização pedagógica. Verifique se os dados obrigatórios foram preenchidos corretamente.");
   }
 }
