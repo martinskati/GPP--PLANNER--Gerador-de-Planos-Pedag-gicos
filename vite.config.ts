@@ -7,7 +7,7 @@ export default defineConfig({
   base: './',
   define: {
     // Mapeia tanto API_KEY quanto VITE_GEMINI_API_KEY para process.env.API_KEY usado no código
-importar { defineConfig} de 'vite'; importar reagir de '@vitejs/plugin-react'; padrão de exportação defineConfig({ Plugins: [react()], base: '. /', definir: { // Mapeia tanto API_KEY quanto VITE_GEMINI_API_KEY para process.env.API_KEY usado no código processo.env.VITE_GEMINI_API_KEY
+    'process.env.API_KEY': JSON.stringify(process.env.VITE_GEMINI_API_KEY || process.env.API_KEY)
   },
   build: {
     outDir: 'dist',
@@ -19,7 +19,3 @@ importar { defineConfig} de 'vite'; importar reagir de '@vitejs/plugin-react'; p
     port: 3000
   }
 });
-define: {
-  'process.env.API_KEY': JSON.stringify(process.env.VITE_GEMINI_API_KEY)
-}
- definir: { 'process.env.API_KEY': JSON.stringify(process.env.VITE_GEMINI_API_KEY) }
