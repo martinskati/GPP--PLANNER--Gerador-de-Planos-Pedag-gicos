@@ -23,6 +23,14 @@ export interface SavedLessonPlan extends LessonPlan {
   createdAt: string;
 }
 
+export interface Feedback {
+  id: string;
+  type: 'sugestao' | 'elogio' | 'erro';
+  name: string;
+  message: string;
+  createdAt: string;
+}
+
 export interface AppState {
   isGenerating: boolean;
   plan: LessonPlan | null;

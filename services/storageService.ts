@@ -1,71 +1,135 @@
 
-import { LessonPlan, SavedLessonPlan } from "../types";
+import { LessonPlan, SavedLessonPlan, Feedback } from "../types";
 
-const STORAGE_KEY = 'pedagogical_assistant_history';
+const PLAN_STORAGE_KEY = 'gpp_community_plans';
+const FEEDBACK_STORAGE_KEY = 'gpp_public_feedback';
 
-// Gerador de ID simples e compatível com todos os ambientes
 const generateId = (): string => {
   return Date.now().toString(36) + Math.random().toString(36).substring(2);
 };
 
-export const storageService = {
-  savePlan: (plan: LessonPlan): SavedLessonPlan => {
-    try {
-      const history = storageService.getHistory();
-      
-      const newSavedPlan: SavedLessonPlan = {
-        ...plan,
-        id: generateId(),
-        createdAt: new Date().toISOString(),
-      };
+// Dados Iniciais de Exemplo (Semente para a Comunidade)
+const INITIAL_PLANS: Partial<SavedLessonPlan>[] = [
+  {
+    discipline: "Língua Portuguesa",
+    content: "Estrutura e Linguagem das Crônicas",
+    teacherName: "Profª Helena Silveira",
+    methodology: "Sala de Aula Invertida e Produção Coletiva",
+    createdAt: new Date(Date.now() - 86400000).toISOString(), // Ontem
+  },
+  {
+    discipline: "Matemática",
+    content: "Frações e Probabilidade no Cotidiano",
+    teacherName: "Prof. Ricardo Mendes",
+    methodology: "Aprendizagem Baseada em Problemas (PBL)",
+    createdAt: new Date(Date.now() - 172800000).toISOString(), // 2 dias atrás
+  },
+  {
+    discipline: "Ciências",
+    content: "Sustentabilidade e Energias Renováveis",
+    teacherName: "Profª Ana Paula",
+    methodology: "Cultura Maker: Construindo um mini gerador eólico",
+    createdAt: new Date(Date.now() - 259200000).toISOString(), // 3 dias atrás
+  }
+];
 
-      // Adiciona no início da lista (mais recente primeiro)
-      const updatedHistory = [newSavedPlan, ...history];
-      
-      // Tenta salvar no localStorage
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(updatedHistory));
-      
-      return newSavedPlan;
-    } catch (e) {
-      console.error("Erro ao salvar plano no histórico:", e);
-      // Retorna o plano mesmo se falhar o save, para não quebrar a UI
-      return {
-        ...plan,
+const INITIAL_FEEDBACKS: Feedback[] = [
+  {
+    id: "f1",
+    type: 'elogio',
+    name: "Coordenação Pedagógica",
+    message: "A sistematização via BNCC e DUA está impecável. Uma ferramenta essencial para nossa rede!",
+    createdAt: new Date(Date.now() - 43200000).toISOString()
+  },
+  {
+    id: "f2",
+    type: 'sugestao',
+    name: "Prof. Marcos Lima",
+    message: "Seria interessante podermos exportar os planos diretamente para o Google Classroom no futuro.",
+    createdAt: new Date(Date.now() - 129600000).toISOString()
+  },
+  {
+    id: "f3",
+    type: 'elogio',
+    name: "Profª Juliana Rocha",
+    message: "Adorei as sugestões de verbos da Taxonomia de Bloom. Facilitou muito meus objetivos!",
+    createdAt: new Date(Date.now() - 216000000).toISOString()
+  }
+];
+
+export const storageService = {
+  // Inicialização
+  init: () => {
+    if (!localStorage.getItem(PLAN_STORAGE_KEY)) {
+      const plans = INITIAL_PLANS.map(p => ({
+        ...p,
         id: generateId(),
-        createdAt: new Date().toISOString()
-      };
+        context: "Exemplo da comunidade",
+        learningObjectives: ["Identificar elementos chave", "Analisar criticamente"],
+        skills: ["EM13LP01.c.17"],
+        development: { what: "Atividade prática", how: "Em grupos de 4" },
+        inclusionStrategies: "Uso de material visual e auditivo",
+        learningEvidence: "Produção final",
+        assessmentInstruments: "Rubrica",
+        ods: ["Educação de Qualidade"],
+        socioemotionalSkills: ["Colaboração"]
+      })) as SavedLessonPlan[];
+      localStorage.setItem(PLAN_STORAGE_KEY, JSON.stringify(plans));
     }
+    if (!localStorage.getItem(FEEDBACK_STORAGE_KEY)) {
+      localStorage.setItem(FEEDBACK_STORAGE_KEY, JSON.stringify(INITIAL_FEEDBACKS));
+    }
+  },
+
+  // Planos Comunitários
+  savePlan: (plan: LessonPlan): SavedLessonPlan => {
+    const history = storageService.getHistory();
+    const newSavedPlan: SavedLessonPlan = {
+      ...plan,
+      id: generateId(),
+      createdAt: new Date().toISOString(),
+    };
+    const updatedHistory = [newSavedPlan, ...history];
+    localStorage.setItem(PLAN_STORAGE_KEY, JSON.stringify(updatedHistory));
+    return newSavedPlan;
   },
 
   getHistory: (): SavedLessonPlan[] => {
     try {
-      const stored = localStorage.getItem(STORAGE_KEY);
-      if (!stored) return [];
-      
-      const parsed = JSON.parse(stored);
-      
-      // Se não for array, considera corrompido e reseta
-      if (!Array.isArray(parsed)) {
-        console.warn("Histórico corrompido, resetando...");
-        localStorage.removeItem(STORAGE_KEY);
-        return [];
-      }
-      
-      return parsed;
+      const stored = localStorage.getItem(PLAN_STORAGE_KEY);
+      return stored ? JSON.parse(stored) : [];
     } catch (e) {
-      console.error("Erro ao recuperar histórico:", e);
       return [];
     }
   },
 
   deletePlan: (id: string): SavedLessonPlan[] => {
+    const history = storageService.getHistory();
+    const updatedHistory = history.filter(plan => plan.id !== id);
+    localStorage.setItem(PLAN_STORAGE_KEY, JSON.stringify(updatedHistory));
+    return updatedHistory;
+  },
+
+  // Feedbacks Públicos
+  saveFeedback: (type: 'sugestao' | 'elogio' | 'erro', name: string, message: string): Feedback => {
+    const feedbacks = storageService.getFeedbacks();
+    const newFeedback: Feedback = {
+      id: generateId(),
+      type,
+      name,
+      message,
+      createdAt: new Date().toISOString()
+    };
+    const updated = [newFeedback, ...feedbacks];
+    localStorage.setItem(FEEDBACK_STORAGE_KEY, JSON.stringify(updated));
+    return newFeedback;
+  },
+
+  getFeedbacks: (): Feedback[] => {
     try {
-      const history = storageService.getHistory();
-      const updatedHistory = history.filter(plan => plan.id !== id);
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(updatedHistory));
-      return updatedHistory;
+      const stored = localStorage.getItem(FEEDBACK_STORAGE_KEY);
+      return stored ? JSON.parse(stored) : [];
     } catch (e) {
-      console.error("Erro ao excluir do histórico:", e);
       return [];
     }
   }

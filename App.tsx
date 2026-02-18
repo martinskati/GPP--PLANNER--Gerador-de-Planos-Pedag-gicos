@@ -8,7 +8,7 @@ import Footer from './components/Footer';
 import PlanResult from './components/PlanResult';
 import HistoryDrawer from './components/HistoryDrawer';
 import FeedbackWidget from './components/FeedbackWidget';
-import { BookOpen, Send, Loader2, ClipboardList, AlertCircle, User, XCircle, BrainCircuit } from 'lucide-react';
+import { BookOpen, Send, Loader2, ClipboardList, AlertCircle, User, XCircle, BrainCircuit, Users } from 'lucide-react';
 
 const App: React.FC = () => {
   const [inputText, setInputText] = useState('');
@@ -23,6 +23,8 @@ const App: React.FC = () => {
   const [history, setHistory] = useState<SavedLessonPlan[]>([]);
 
   useEffect(() => {
+    // Inicializa o banco com dados de exemplo se estiver vazio
+    storageService.init();
     setHistory(storageService.getHistory());
   }, []);
 
@@ -41,9 +43,7 @@ const App: React.FC = () => {
     setState(prev => ({ ...prev, isGenerating: true, error: null }));
     
     try {
-      // Coleta as últimas 5 metodologias para enviar ao Gemini como contexto de "o que evitar repetir"
       const recentMethods = history.slice(0, 5).map(p => `${p.content}: ${p.methodology}`);
-      
       const generatedPlan = await generateLessonPlan(inputText, recentMethods);
       generatedPlan.teacherName = teacherName;
       
@@ -78,7 +78,7 @@ const App: React.FC = () => {
   };
 
   const handleDeletePlan = (id: string) => {
-    if (confirm('Excluir este plano do histórico?')) {
+    if (confirm('Excluir este plano do repositório?')) {
       const updated = storageService.deletePlan(id);
       setHistory(updated);
     }
@@ -122,12 +122,18 @@ const App: React.FC = () => {
               <div className="absolute top-0 right-0 p-4 opacity-10">
                 <BrainCircuit className="w-24 h-24 text-emerald-900" />
               </div>
-              <div className="flex items-center space-x-3 mb-4 relative z-10">
-                <ClipboardList className="text-emerald-800 w-6 h-6" />
-                <h2 className="text-lg font-bold text-emerald-900">Guia de Sistematização</h2>
+              <div className="flex items-center justify-between mb-4 relative z-10">
+                <div className="flex items-center space-x-3">
+                  <ClipboardList className="text-emerald-800 w-6 h-6" />
+                  <h2 className="text-lg font-bold text-emerald-900">Guia de Sistematização</h2>
+                </div>
+                <div className="flex items-center gap-2 bg-white/80 px-3 py-1 rounded-full border border-emerald-200 shadow-sm">
+                  <Users className="w-4 h-4 text-emerald-700" />
+                  <span className="text-[10px] font-black text-emerald-800 uppercase tracking-widest">{history.length} Planos na Rede</span>
+                </div>
               </div>
               <p className="text-sm text-emerald-800/80 mb-6 font-medium relative z-10">
-                O assistente agora possui <span className="font-black underline">Memória Ativa</span>. Ele analisará seus planos anteriores para sugerir metodologias inéditas.
+                O assistente possui <span className="font-black underline">Memória Ativa</span>. Ele analisa o repositório da comunidade para sugerir metodologias inovadoras.
               </p>
               <div className="grid md:grid-cols-2 gap-4 text-xs relative z-10">
                 {[
@@ -175,7 +181,7 @@ const App: React.FC = () => {
                 
                 <div className="flex flex-col md:flex-row items-center justify-between gap-4">
                   <div className="flex items-center text-[11px] text-slate-400 font-bold uppercase tracking-wider">
-                    <BrainCircuit className="w-4 h-4 mr-2 text-emerald-700 animate-pulse" /> Inteligência com Contexto Ativo (BNCC, ODS e DUA)
+                    <BrainCircuit className="w-4 h-4 mr-2 text-emerald-700 animate-pulse" /> Inteligência Coletiva Ativa (BNCC, ODS e DUA)
                   </div>
                   <button
                     type="submit" 
@@ -183,7 +189,7 @@ const App: React.FC = () => {
                     className="w-full md:w-auto flex items-center justify-center space-x-2 bg-emerald-800 hover:bg-emerald-900 disabled:bg-slate-300 text-white px-8 py-4 rounded-xl font-bold transition-all shadow-lg active:scale-95"
                   >
                     {state.isGenerating ? (
-                      <><Loader2 className="w-5 h-5 animate-spin" /><span>Consultando Histórico e Gerando...</span></>
+                      <><Loader2 className="w-5 h-5 animate-spin" /><span>Consultando Rede e Gerando...</span></>
                     ) : (
                       <><Send className="w-5 h-5" /><span>Sistematizar Agora</span></>
                     )}
