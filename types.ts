@@ -2,20 +2,22 @@
 export interface LessonPlan {
   discipline: string;
   content: string;
+  objectOfKnowledge: string; // Novo campo padrão SESI
   context: string;
   teacherName: string;
   learningObjectives: string[];
   skills: string[];
   methodology: string;
   development: {
-    what: string;
-    how: string;
+    what: string; // O que será feito?
+    how: string;  // Como será feito?
   };
   inclusionStrategies: string;
   learningEvidence: string;
   assessmentInstruments: string;
   ods: string[];
   socioemotionalSkills: string[];
+  supportMaterials?: string[]; // Espaço para materiais
 }
 
 export interface SavedLessonPlan extends LessonPlan {
