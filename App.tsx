@@ -53,7 +53,12 @@ const App: React.FC = () => {
     setState(prev => ({ ...prev, isGenerating: true, error: null }));
     
     try {
-      const recentMethods = history.slice(0, 5).map(p => `${p.theme}: ${p.methodology.map(m => m.level).join(',')}`);
+      const recentMethods = history.slice(0, 5).map(p => {
+        const levels = Array.isArray(p.methodology) 
+          ? p.methodology.map(m => m.level).join(',') 
+          : '';
+        return `${p.theme}: ${levels}`;
+      });
       const generatedPlans = await generateLessonPlan(inputText, recentMethods);
       
       const plansWithTeacher = generatedPlans.map(p => ({ ...p, teacherName }));
