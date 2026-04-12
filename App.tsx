@@ -8,6 +8,7 @@ import Footer from './components/Footer';
 import PlanResult from './components/PlanResult';
 import HistoryDrawer from './components/HistoryDrawer';
 import FeedbackWidget from './components/FeedbackWidget';
+import AdminDashboard from './components/AdminDashboard';
 import { BookOpen, Send, Loader2, ClipboardList, AlertCircle, User, XCircle, BrainCircuit, Users } from 'lucide-react';
 
 const App: React.FC = () => {
@@ -16,17 +17,26 @@ const App: React.FC = () => {
   
   const [state, setState] = useState<AppState>({
     isGenerating: false,
-    plan: null,
+    plans: [],
     error: null,
-    showHistory: false
+    showHistory: false,
+    view: 'app'
   });
   const [history, setHistory] = useState<SavedLessonPlan[]>([]);
 
   useEffect(() => {
-    // Inicializa o banco com dados de exemplo se estiver vazio
     storageService.init();
     setHistory(storageService.getHistory());
   }, []);
+
+  const handleAdminAccess = () => {
+    const pass = prompt("Digite a senha de administrador:");
+    if (pass === "admin123") { // Senha simples para demonstração
+      setState(prev => ({ ...prev, view: 'admin' }));
+    } else if (pass !== null) {
+      alert("Senha incorreta.");
+    }
+  };
 
   const handleSubmit = useCallback(async (e: React.FormEvent) => {
     e.preventDefault();
@@ -43,37 +53,41 @@ const App: React.FC = () => {
     setState(prev => ({ ...prev, isGenerating: true, error: null }));
     
     try {
-      const recentMethods = history.slice(0, 5).map(p => `${p.content}: ${p.methodology}`);
-      const generatedPlan = await generateLessonPlan(inputText, recentMethods);
-      generatedPlan.teacherName = teacherName;
+      const recentMethods = history.slice(0, 5).map(p => `${p.theme}: ${p.methodology.map(m => m.level).join(',')}`);
+      const generatedPlans = await generateLessonPlan(inputText, recentMethods);
       
-      storageService.savePlan(generatedPlan);
+      const plansWithTeacher = generatedPlans.map(p => ({ ...p, teacherName }));
+      
+      storageService.savePlans(plansWithTeacher);
+      storageService.logUsage(teacherName, inputText, plansWithTeacher);
+      
       const updatedHistory = storageService.getHistory();
       setHistory(updatedHistory);
 
       setState({
         isGenerating: false,
-        plan: generatedPlan,
+        plans: plansWithTeacher,
         error: null,
-        showHistory: false
+        showHistory: false,
+        view: 'app'
       });
     } catch (err: any) {
       console.error("Erro na submissão:", err);
       setState(prev => ({
         ...prev,
         isGenerating: false,
-        error: err.message || "Não foi possível gerar o plano agora. Tente novamente em alguns instantes."
+        error: err.message || "Não foi possível gerar os planos agora. Tente novamente em alguns instantes."
       }));
     }
   }, [inputText, teacherName, history]);
 
   const handleReset = () => {
-    setState({ isGenerating: false, plan: null, error: null, showHistory: false });
+    setState({ isGenerating: false, plans: [], error: null, showHistory: false, view: 'app' });
     setInputText('');
   };
 
   const handleSelectHistoryPlan = (savedPlan: SavedLessonPlan) => {
-    setState(prev => ({ ...prev, plan: savedPlan, showHistory: false, error: null }));
+    setState(prev => ({ ...prev, plans: [savedPlan], showHistory: false, error: null, view: 'app' }));
     setTeacherName(savedPlan.teacherName);
   };
 
@@ -83,6 +97,10 @@ const App: React.FC = () => {
       setHistory(updated);
     }
   };
+
+  if (state.view === 'admin') {
+    return <AdminDashboard onBack={() => setState(prev => ({ ...prev, view: 'app' }))} />;
+  }
 
   return (
     <div className="min-h-screen flex flex-col text-slate-800 relative bg-slate-50">
@@ -99,7 +117,7 @@ const App: React.FC = () => {
       <FeedbackWidget />
 
       <main className="flex-grow container mx-auto px-4 py-8 max-w-5xl">
-        {!state.plan ? (
+        {state.plans.length === 0 ? (
           <div className="space-y-10 animate-in fade-in duration-500">
             
             {state.error && (
@@ -199,10 +217,10 @@ const App: React.FC = () => {
             </div>
           </div>
         ) : (
-          <PlanResult plan={state.plan} onReset={handleReset} />
+          <PlanResult plans={state.plans} onReset={handleReset} />
         )}
       </main>
-      <Footer />
+      <Footer onAdminClick={handleAdminAccess} />
     </div>
   );
 };

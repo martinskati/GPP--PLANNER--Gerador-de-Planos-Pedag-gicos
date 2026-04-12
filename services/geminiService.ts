@@ -1,60 +1,60 @@
-
 import { GoogleGenAI, Type } from "@google/genai";
 import { LessonPlan } from "../types";
 
-const SYSTEM_INSTRUCTION = `Você é um Consultor Pedagógico de elite especializado no modelo SESI de educação.
-Sua tarefa é produzir planos de aula técnicos, objetivos e aplicáveis.
+const SYSTEM_INSTRUCTION = `Você é um Consultor Pedagógico de elite especializado na Taxonomia de Bloom e no padrão SESI de educação.
+Sua tarefa é gerar até 3 planos de aula independentes e completos a partir de um único comando.
 
 DIRETRIZES RÍGIDAS:
-1. PADRÃO SESI: O desenvolvimento DEVE responder explicitamente a: "O que será feito?" e "Como será feito?".
-2. OBJETIVIDADE: Não explique a relevância das metodologias nem justifique teorias. 
-3. ESTRATÉGIA: A metodologia deve ser apresentada apenas como escolha estratégica direta alinhada ao objetivo.
-4. INCLUSÃO: Referencie sempre o DUA (Desenho Universal para Aprendizagem).
-5. BLOOM: Use verbos de ação claros para objetivos de aprendizagem.
-
-ESTRUTURA OBRIGATÓRIA:
-- ODS Relacionadas (1 a 3).
-- Habilidades Socioemocionais mobilizadas.
-- Objeto do Conhecimento (claro e direto).
-- Evidências de Aprendizagem (resultados observáveis).
-- Instrumentos de Avaliação (coerentes com a prática).
+1. TAXONOMIA DE BLOOM: Todo o plano deve seguir a progressão pedagógica de Bloom.
+   - Objetivos: Use verbos de ação claros (ex: Identificar, Explicar, Aplicar, Analisar, Justificar, Criar).
+   - Metodologia: Divida em etapas correspondentes aos níveis cognitivos (Lembrar, Compreender, Aplicar, Analisar, Avaliar, Criar).
+   - Avaliação: Deve focar nos níveis superiores (Analisar, Avaliar ou Criar).
+2. GERAÇÃO MÚLTIPLA: Gere até 3 planos distintos (Plano 1, Plano 2, Plano 3). Se o usuário pedir algo genérico, crie 3 abordagens diferentes para o mesmo tema.
+3. VARIAÇÃO: Evite repetir estruturas entre os planos. Use metodologias ativas variadas (PBL, Sala Invertida, Rotação por Estações, Gamificação, Estudo de Caso, etc.).
+4. QUALIDADE: Cada plano deve ser profundo, técnico e imediatamente aplicável. Evite descrições superficiais como "discussão em grupo" sem objetivo cognitivo.
 `;
 
 const lessonPlanSchema = {
   type: Type.OBJECT,
   properties: {
-    discipline: { type: Type.STRING },
-    content: { type: Type.STRING },
-    objectOfKnowledge: { type: Type.STRING, description: "O tópico central de conteúdo." },
-    teacherName: { type: Type.STRING },
-    ods: { type: Type.ARRAY, items: { type: Type.STRING } },
-    socioemotionalSkills: { type: Type.ARRAY, items: { type: Type.STRING } },
-    learningObjectives: { type: Type.ARRAY, items: { type: Type.STRING } },
-    skills: { type: Type.ARRAY, items: { type: Type.STRING } },
-    methodology: { type: Type.STRING, description: "Apenas o nome e a estratégia de aplicação." },
-    inclusionStrategies: { type: Type.STRING, description: "Foco em DUA." },
-    development: {
-      type: Type.OBJECT,
-      properties: {
-        what: { type: Type.STRING, description: "O que será feito em aula?" },
-        how: { type: Type.STRING, description: "Como será feito?" }
-      },
-      required: ["what", "how"]
-    },
-    learningEvidence: { type: Type.STRING },
-    assessmentInstruments: { type: Type.STRING }
+    plans: {
+      type: Type.ARRAY,
+      items: {
+        type: Type.OBJECT,
+        properties: {
+          theme: { type: Type.STRING },
+          discipline: { type: Type.STRING },
+          objectives: { type: Type.ARRAY, items: { type: Type.STRING }, description: "Verbos da Taxonomia de Bloom." },
+          contents: { type: Type.STRING },
+          methodology: {
+            type: Type.ARRAY,
+            items: {
+              type: Type.OBJECT,
+              properties: {
+                level: { type: Type.STRING, enum: ['Lembrar', 'Compreender', 'Aplicar', 'Analisar', 'Avaliar', 'Criar'] },
+                activity: { type: Type.STRING },
+                cognitiveObjective: { type: Type.STRING }
+              },
+              required: ["level", "activity", "cognitiveObjective"]
+            }
+          },
+          resources: { type: Type.ARRAY, items: { type: Type.STRING } },
+          assessment: { type: Type.STRING },
+          ods: { type: Type.ARRAY, items: { type: Type.STRING } },
+          socioemotionalSkills: { type: Type.ARRAY, items: { type: Type.STRING } }
+        },
+        required: ["theme", "discipline", "objectives", "contents", "methodology", "resources", "assessment"]
+      }
+    }
   },
-  required: [
-    "discipline", "content", "objectOfKnowledge", "ods", 
-    "socioemotionalSkills", "learningObjectives", "skills", 
-    "methodology", "inclusionStrategies", "development", 
-    "learningEvidence", "assessmentInstruments"
-  ]
+  required: ["plans"]
 };
 
-export async function generateLessonPlan(teacherText: string, recentMethodologies: string[] = []): Promise<LessonPlan> {
-  const apiKey = process.env.API_KEY;
-  if (!apiKey) throw new Error("API_KEY não detectada.");
+const sleep = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
+
+export async function generateLessonPlan(teacherText: string, recentMethodologies: string[] = []): Promise<LessonPlan[]> {
+  const apiKey = process.env.GEMINI_API_KEY;
+  if (!apiKey) throw new Error("GEMINI_API_KEY não detectada.");
 
   const ai = new GoogleGenAI({ apiKey });
   
@@ -62,26 +62,44 @@ export async function generateLessonPlan(teacherText: string, recentMethodologie
     ? `METODOLOGIAS_RECENTES (NÃO REPETIR): ${recentMethodologies.join(', ')}`
     : "";
 
-  try {
-    const response = await ai.models.generateContent({
-      model: "gemini-3-flash-preview",
-      contents: [
-        { text: historyContext },
-        { text: `Ideia do Professor (SESI Standard): ${teacherText}` }
-      ],
-      config: {
-        systemInstruction: SYSTEM_INSTRUCTION,
-        responseMimeType: "application/json",
-        responseSchema: lessonPlanSchema,
-        temperature: 0.3, // Menor temperatura para maior consistência técnica
-      },
-    });
+  const maxRetries = 3;
+  let lastError: any;
 
-    const text = response.text;
-    if (!text) throw new Error("Falha na geração.");
-    
-    return JSON.parse(text) as LessonPlan;
-  } catch (error: any) {
-    throw new Error(error.message || "Erro na geração do plano.");
+  for (let i = 0; i < maxRetries; i++) {
+    try {
+      const response = await ai.models.generateContent({
+        model: "gemini-3-flash-preview",
+        contents: [
+          { parts: [{ text: historyContext }] },
+          { parts: [{ text: `Comando do Professor: ${teacherText}. Gere até 3 planos de aula completos e distintos seguindo a Taxonomia de Bloom.` }] }
+        ],
+        config: {
+          systemInstruction: SYSTEM_INSTRUCTION,
+          responseMimeType: "application/json",
+          responseSchema: lessonPlanSchema,
+          temperature: 0.7,
+        }
+      });
+
+      const text = response.text;
+      if (!text) throw new Error("Falha na geração.");
+      
+      const result = JSON.parse(text);
+      return result.plans as LessonPlan[];
+    } catch (error: any) {
+      lastError = error;
+      
+      // Se for erro de cota (429), espera e tenta novamente
+      if (error.message?.includes("429") || error.status === 429) {
+        const delay = Math.pow(2, i) * 2000; // 2s, 4s, 8s
+        console.warn(`Limite de cota atingido. Tentando novamente em ${delay}ms...`);
+        await sleep(delay);
+        continue;
+      }
+      
+      throw error;
+    }
   }
+
+  throw new Error(`Após ${maxRetries} tentativas, o erro persistiu: ${lastError.message}`);
 }

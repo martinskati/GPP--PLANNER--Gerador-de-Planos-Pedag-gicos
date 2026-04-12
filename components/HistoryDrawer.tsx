@@ -22,9 +22,9 @@ const HistoryDrawer: React.FC<HistoryDrawerProps> = ({
 
   const groupedHistory = useMemo(() => {
     const filtered = history.filter(p => 
-      p.content.toLowerCase().includes(searchTerm.toLowerCase()) || 
-      p.discipline.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      p.teacherName.toLowerCase().includes(searchTerm.toLowerCase())
+      (p.theme?.toLowerCase() || '').includes(searchTerm.toLowerCase()) || 
+      (p.discipline?.toLowerCase() || '').includes(searchTerm.toLowerCase()) ||
+      (p.teacherName?.toLowerCase() || '').includes(searchTerm.toLowerCase())
     );
 
     const groups: Record<string, SavedLessonPlan[]> = {};
@@ -97,7 +97,7 @@ const HistoryDrawer: React.FC<HistoryDrawerProps> = ({
                       <div className="cursor-pointer" onClick={() => onSelectPlan(plan)}>
                         <div className="flex justify-between items-start mb-2">
                           <h4 className="text-slate-900 font-bold text-sm group-hover:text-emerald-800 transition-colors line-clamp-1">
-                            {plan.content}
+                            {plan.theme}
                           </h4>
                           <span className="text-[9px] text-slate-400 font-bold flex items-center gap-1 shrink-0 ml-2">
                             <Calendar className="w-3 h-3" />

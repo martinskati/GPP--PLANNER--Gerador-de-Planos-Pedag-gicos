@@ -1,23 +1,22 @@
 
+export interface BloomStep {
+  level: 'Lembrar' | 'Compreender' | 'Aplicar' | 'Analisar' | 'Avaliar' | 'Criar';
+  activity: string;
+  cognitiveObjective: string;
+}
+
 export interface LessonPlan {
+  id?: string;
+  theme: string;
   discipline: string;
-  content: string;
-  objectOfKnowledge: string; // Novo campo padrão SESI
-  context: string;
   teacherName: string;
-  learningObjectives: string[];
-  skills: string[];
-  methodology: string;
-  development: {
-    what: string; // O que será feito?
-    how: string;  // Como será feito?
-  };
-  inclusionStrategies: string;
-  learningEvidence: string;
-  assessmentInstruments: string;
-  ods: string[];
-  socioemotionalSkills: string[];
-  supportMaterials?: string[]; // Espaço para materiais
+  objectives: string[]; // Verbos Bloom
+  contents: string;
+  methodology: BloomStep[];
+  resources: string[];
+  assessment: string;
+  ods?: string[];
+  socioemotionalSkills?: string[];
 }
 
 export interface SavedLessonPlan extends LessonPlan {
@@ -33,9 +32,19 @@ export interface Feedback {
   createdAt: string;
 }
 
+export interface UsageLog {
+  id: string;
+  timestamp: string;
+  teacherName: string;
+  prompt: string;
+  plansCount: number;
+  themes: string[];
+}
+
 export interface AppState {
   isGenerating: boolean;
-  plan: LessonPlan | null;
+  plans: LessonPlan[]; // Agora suporta múltiplos planos
   error: string | null;
   showHistory: boolean;
+  view: 'app' | 'admin';
 }
