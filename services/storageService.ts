@@ -14,14 +14,23 @@ const INITIAL_PLANS: Partial<SavedLessonPlan>[] = [
     theme: "Estrutura e Linguagem das Crônicas",
     discipline: "Língua Portuguesa",
     teacherName: "Profª Helena Silveira",
+    suggestedMethodology: "Sala de Aula Invertida",
     objectives: ["Identificar elementos narrativos", "Analisar o uso da ironia"],
+    knowledgeObject: "Gêneros textuais: a crônica",
     contents: "Gênero Crônica; Elementos da narrativa.",
     methodology: [
       { level: 'Lembrar', activity: "Leitura compartilhada de uma crônica.", cognitiveObjective: "Reconhecer a estrutura do texto." },
       { level: 'Compreender', activity: "Discussão sobre o tema central.", cognitiveObjective: "Interpretar as intenções do autor." }
     ],
+    whatWillBeDone: "Leitura e análise de crônicas contemporâneas.",
+    howItWillBeDone: "Através de leitura mediada e debate em sala.",
+    inclusionProposal: "Disponibilizar versões em áudio e textos com fonte ampliada.",
+    dua: "Uso de múltiplos meios de representação (texto, áudio) e expressão (debate, escrita).",
     resources: ["Livro didático", "Projetor"],
-    assessment: "Produção de um parágrafo reflexivo.",
+    learningEvidence: "Produção textual e participação no debate.",
+    assessment: "Observação da participação e análise da produção textual.",
+    assessmentInstruments: "Rubrica de avaliação de texto e ficha de observação.",
+    activityTips: "1. Criar um mural de crônicas da turma.\n2. Entrevistar funcionários da escola para coletar causos do cotidiano.",
     createdAt: new Date(Date.now() - 86400000).toISOString(),
   }
 ];

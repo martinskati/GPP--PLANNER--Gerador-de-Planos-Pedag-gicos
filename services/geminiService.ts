@@ -9,9 +9,19 @@ DIRETRIZES RÍGIDAS:
    - Objetivos: Use verbos de ação claros (ex: Identificar, Explicar, Aplicar, Analisar, Justificar, Criar).
    - Metodologia: Divida em etapas correspondentes aos níveis cognitivos (Lembrar, Compreender, Aplicar, Analisar, Avaliar, Criar).
    - Avaliação: Deve focar nos níveis superiores (Analisar, Avaliar ou Criar).
-2. GERAÇÃO MÚLTIPLA: Gere até 3 planos distintos (Plano 1, Plano 2, Plano 3). Se o usuário pedir algo genérico, crie 3 abordagens diferentes para o mesmo tema.
-3. VARIAÇÃO: Evite repetir estruturas entre os planos. Use metodologias ativas variadas (PBL, Sala Invertida, Rotação por Estações, Gamificação, Estudo de Caso, etc.).
-4. QUALIDADE: Cada plano deve ser profundo, técnico e imediatamente aplicável. Evite descrições superficiais como "discussão em grupo" sem objetivo cognitivo.
+2. ESTRUTURA OBRIGATÓRIA: Cada plano DEVE conter:
+   - Metodologia Sugerida: Identifique explicitamente qual metodologia ativa melhor se enquadra (ex: PBL, Sala Invertida, Gamificação, Rotação por Estações, Estudo de Caso, etc.).
+   - ODS (Objetivos de Desenvolvimento Sustentável relacionados).
+   - DUA (Desenho Universal para Aprendizagem): Estratégias de acessibilidade e inclusão.
+   - Objeto do Conhecimento (Conteúdo central segundo a BNCC).
+   - O que será feito em aula (Resumo das atividades).
+   - Como será feito a aula (Passo a passo metodológico).
+   - Evidências de Aprendizagem (O que o aluno deve demonstrar ter aprendido).
+   - Instrumentos de Avaliação (Como será verificado o aprendizado).
+   - Dicas de propostas de atividades (Sugestões práticas e aplicáveis para o professor).
+3. GERAÇÃO MÚLTIPLA: Gere até 3 planos distintos (Plano 1, Plano 2, Plano 3).
+4. VARIAÇÃO: Evite repetir estruturas entre os planos. Use metodologias ativas variadas.
+5. QUALIDADE: Cada plano deve ser profundo, técnico e imediatamente aplicável.
 `;
 
 const lessonPlanSchema = {
@@ -24,7 +34,9 @@ const lessonPlanSchema = {
         properties: {
           theme: { type: Type.STRING },
           discipline: { type: Type.STRING },
+          suggestedMethodology: { type: Type.STRING, description: "Nome da metodologia ativa sugerida (ex: Aprendizagem Baseada em Problemas)." },
           objectives: { type: Type.ARRAY, items: { type: Type.STRING }, description: "Verbos da Taxonomia de Bloom." },
+          knowledgeObject: { type: Type.STRING, description: "Objeto do conhecimento segundo a BNCC." },
           contents: { type: Type.STRING },
           methodology: {
             type: Type.ARRAY,
@@ -38,12 +50,23 @@ const lessonPlanSchema = {
               required: ["level", "activity", "cognitiveObjective"]
             }
           },
+          whatWillBeDone: { type: Type.STRING, description: "O que será feito em aula." },
+          howItWillBeDone: { type: Type.STRING, description: "Como será feito a aula." },
+          inclusionProposal: { type: Type.STRING, description: "Proposta de inclusão para diversidade." },
+          dua: { type: Type.STRING, description: "Desenho Universal para Aprendizagem (DUA)." },
           resources: { type: Type.ARRAY, items: { type: Type.STRING } },
-          assessment: { type: Type.STRING },
-          ods: { type: Type.ARRAY, items: { type: Type.STRING } },
+          learningEvidence: { type: Type.STRING, description: "Evidências de aprendizagem esperadas." },
+          assessment: { type: Type.STRING, description: "Resumo da avaliação." },
+          assessmentInstruments: { type: Type.STRING, description: "Instrumentos de avaliação específicos." },
+          activityTips: { type: Type.STRING, description: "Dicas de propostas de atividades práticas." },
+          ods: { type: Type.ARRAY, items: { type: Type.STRING }, description: "ODS relacionadas." },
           socioemotionalSkills: { type: Type.ARRAY, items: { type: Type.STRING } }
         },
-        required: ["theme", "discipline", "objectives", "contents", "methodology", "resources", "assessment"]
+        required: [
+          "theme", "discipline", "suggestedMethodology", "objectives", "knowledgeObject", "contents", 
+          "methodology", "whatWillBeDone", "howItWillBeDone", "inclusionProposal", "dua",
+          "resources", "learningEvidence", "assessmentInstruments", "activityTips"
+        ]
       }
     }
   },
