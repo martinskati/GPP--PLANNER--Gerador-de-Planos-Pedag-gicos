@@ -76,20 +76,20 @@ const lessonPlanSchema = {
 const sleep = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
 
 export async function generateLessonPlan(teacherText: string, recentMethodologies: string[] = []): Promise<LessonPlan[]> {
-  // A plataforma AI Studio Build injeta automaticamente a GEMINI_API_KEY no ambiente.
-  // Se você estiver rodando localmente ou em outro servidor, certifique-se de configurar
-  // esta variável no arquivo .env ou nas configurações de deploy.
-  const apiKey = process.env.GEMINI_API_KEY;
+  // Verificamos primeiro GEMINI_API_KEY (padrão) e depois API_KEY (fallback)
+  // No Vite, process.env é injetado via vite.config.ts
+  const apiKey = process.env.GEMINI_API_KEY || process.env.API_KEY;
   
   if (!apiKey || apiKey === "") {
-    console.error("ERRO DE CONFIGURAÇÃO: GEMINI_API_KEY não detectada.");
+    console.error("ERRO DE CONFIGURAÇÃO: Chave da API não detectada.");
     throw new Error(
-      "ATENÇÃO PROFESSOR: A Chave da API (GEMINI_API_KEY) não foi detectada.\n\n" +
-      "Para corrigir:\n" +
-      "1. No AI Studio Build, vá em 'Settings' (ícone de engrenagem).\n" +
-      "2. Adicione uma nova variável chamada GEMINI_API_KEY.\n" +
-      "3. Cole sua chave obtida em https://aistudio.google.com/app/apikey\n" +
-      "4. Reinicie a aplicação."
+      "PROFESSOR, CONFIGURAÇÃO PENDENTE:\n" +
+      "A chave de acesso à Inteligência Artificial (GEMINI_API_KEY) não foi encontrada.\n\n" +
+      "COMO RESOLVER:\n" +
+      "1. Clique no ícone de 'Settings' (engrenagem) nesta página.\n" +
+      "2. Clique em 'Add variable' e no nome coloque: GEMINI_API_KEY\n" +
+      "3. No valor, cole sua chave do site: https://aistudio.google.com/app/apikey\n" +
+      "4. Após salvar, aguarde o reinício automático do aplicativo."
     );
   }
 
