@@ -76,8 +76,22 @@ const lessonPlanSchema = {
 const sleep = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
 
 export async function generateLessonPlan(teacherText: string, recentMethodologies: string[] = []): Promise<LessonPlan[]> {
+  // A plataforma AI Studio Build injeta automaticamente a GEMINI_API_KEY no ambiente.
+  // Se você estiver rodando localmente ou em outro servidor, certifique-se de configurar
+  // esta variável no arquivo .env ou nas configurações de deploy.
   const apiKey = process.env.GEMINI_API_KEY;
-  if (!apiKey) throw new Error("GEMINI_API_KEY não detectada.");
+  
+  if (!apiKey || apiKey === "") {
+    console.error("ERRO DE CONFIGURAÇÃO: GEMINI_API_KEY não detectada.");
+    throw new Error(
+      "ATENÇÃO PROFESSOR: A Chave da API (GEMINI_API_KEY) não foi detectada.\n\n" +
+      "Para corrigir:\n" +
+      "1. No AI Studio Build, vá em 'Settings' (ícone de engrenagem).\n" +
+      "2. Adicione uma nova variável chamada GEMINI_API_KEY.\n" +
+      "3. Cole sua chave obtida em https://aistudio.google.com/app/apikey\n" +
+      "4. Reinicie a aplicação."
+    );
+  }
 
   const ai = new GoogleGenAI({ apiKey });
   
